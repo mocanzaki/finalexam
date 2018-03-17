@@ -10,10 +10,16 @@ with open(os.path.join(here, 'CHANGES.txt')) as f:
 
 requires = [
     'plaster_pastedeploy',
-    'pyramid',
-    'pyramid_jinja2',
+    'pyramid >= 1.9a',
     'pyramid_debugtoolbar',
+    'pyramid_jinja2',
+    'pyramid_retry',
+    'pyramid_tm',
+    'SQLAlchemy',
+    'transaction',
+    'zope.sqlalchemy',
     'waitress',
+	'pymysql',
 ]
 
 tests_require = [
@@ -30,11 +36,12 @@ setup(
     classifiers=[
         'Programming Language :: Python',
         'Framework :: Pyramid',
+        'Database :: MySQL',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
     ],
-    author='',
-    author_email='',
+    author='Mocan Zakarias',
+    author_email='mocanzakarias@gmail.com',
     url='',
     keywords='web pyramid pylons',
     packages=find_packages(),
@@ -47,6 +54,9 @@ setup(
     entry_points={
         'paste.app_factory': [
             'main = mel_srl:main',
+        ],
+        'console_scripts': [
+            'initialize_mel_srl_db = mel_srl.scripts.initializedb:main',
         ],
     },
 )

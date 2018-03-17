@@ -8,18 +8,26 @@ Getting Started
 
     cd mel_srl
 
+- Create a Python virtual environment.
+
+    python3 -m venv env
+
 - Upgrade packaging tools.
 
-    pip install --upgrade pip setuptools
+    env/bin/pip install --upgrade pip setuptools
 
 - Install the project in editable mode with its testing requirements.
 
-    pip install -e ".[testing]"
+    env/bin/pip install -e ".[testing]"
+
+- Configure the database.
+
+    env/bin/initialize_mel_srl_db development.ini
 
 - Run your project's tests.
 
-    pytest
+    env/bin/pytest
 
 - Run your project.
 
-    pserve development.ini
+    env/bin/pserve development.ini
