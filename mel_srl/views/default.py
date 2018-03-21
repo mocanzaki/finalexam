@@ -1,21 +1,22 @@
 from pyramid.response import Response
 from pyramid.view import view_config
 
-from sqlalchemy.exc import DBAPIError
-
-from ..models import MyModel
-
+# File used for describing the template rendering and the actions on every route
+# SYNTAX
+# route_name must correspond to a route_name from ../routes.py
+# renderer must be an existing template in ../templates
+# function can have any name with a request parameter which stores data from the request
+# can RETURN almost anything, but mostly the data to be rendered on the renderer in a dictionary
+# dictionary key is used on the template to show the value of the key
 
 @view_config(route_name='home', renderer='../templates/mytemplate.jinja2')
-def my_view(request):
-    try:
-        query = request.dbsession.query(MyModel)
-        one = query.filter(MyModel.name == 'one').first()
-    except DBAPIError:
-        return Response(db_err_msg, content_type='text/plain', status=500)
-    return {'one': one, 'project': 'mel_srl'}
+def home(request):
+     return {'one': "one", 'project': 'mel_srl'}
 
+@view_config(route_name='login', renderer='../templates/mytemplate.jinja2')
+def login(request):
+    return {'one': "alma", 'project': 'mel_srl'}
 
-db_err_msg = """\
-There is a problem, connecting to the database!
-"""
+@view_config(route_name='register', renderer='../templates/mytemplate.jinja2')
+def register(request):
+    return {'one': "alma", 'project': 'mel_srl'}

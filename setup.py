@@ -20,6 +20,10 @@ requires = [
     'zope.sqlalchemy',
     'waitress',
 	'pymysql',
+    'mysql.connector',
+    'mysql.connector.pooling',
+    'hashlib',
+    'uuid',
 ]
 
 tests_require = [
@@ -54,9 +58,6 @@ setup(
     entry_points={
         'paste.app_factory': [
             'main = mel_srl:main',
-        ],
-        'console_scripts': [
-            'initialize_mel_srl_db = mel_srl.scripts.initializedb:main',
         ],
     },
 )
