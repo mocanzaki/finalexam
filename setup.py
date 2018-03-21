@@ -20,10 +20,7 @@ requires = [
     'zope.sqlalchemy',
     'waitress',
 	'pymysql',
-    'mysql.connector',
-    'mysql.connector.pooling',
-    'hashlib',
-    'uuid',
+    'mysql-connector',
 ]
 
 tests_require = [

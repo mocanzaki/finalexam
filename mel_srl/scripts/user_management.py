@@ -1,6 +1,6 @@
 import hashlib, uuid
-from db_conn import Connection
-from escape_strings import escape_sql_input
+from .db_conn import Connection
+from .escape_strings import escape_sql_input
 
 # Try to log in with the given credentials
 # INPUT - Username as string, Password as string
