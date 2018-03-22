@@ -1,6 +1,6 @@
 from pyramid.response import Response
 from pyramid.view import view_config
-from scripts.db_conn import Connection 
+from ..scripts.db_conn import Connection 
 
 # File used for describing the template rendering and the actions on every route
 # SYNTAX
