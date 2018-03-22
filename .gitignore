@@ -8,7 +8,7 @@ coverage.xml
 build/
 dist/
 .tox/
-.log
+*.log
 nosetests.xml
 env*/
 tmp/
