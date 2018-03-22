@@ -1,6 +1,10 @@
 import hashlib, uuid
 from .db_conn import Connection
 from .escape_strings import escape_sql_input
+import logging
+
+# Create a pool for MySQL Connections
+connection_pool = Connection()
 
 # Try to log in with the given credentials
 # INPUT - Username as string, Password as string
@@ -10,13 +14,15 @@ def login(username, password):
     username = escape_sql_input(username)
     password = escape_sql_input(password)
 
-    # Get a connection from the pool and get the credentials of the user
-    [salt, pw, permission] = Connection().get_user_credentials(username)
+    # Get the credentials of the user
+    [salt, pw, permission] = connection_pool.get_user_credentials(username)
     # Check if encrypted password is equal to the encrypted combination of the given password and the salt from the database
     if (pw == hashlib.sha512(password.encode() + salt.encode()).hexdigest()):
+        logging.getLogger('user_management').debug('Login succesfully for user: ' + username + ', with permission: ' + permission)
         # If so, return the permission of the user
         return permission
     else:
+        logging.getLogger('user_management').debug('Login failed for user: ' + username)
         # Otherwise he has no permission
         return None
 
@@ -35,4 +41,4 @@ def register(username, name, email, phone, num_plate, password):
     password = hashlib.sha512(password.encode() + salt.encode()).hexdigest()
 
     # Return insertion result
-    return Connection().insert_new_user([username, name, email, phone, num_plate, salt, password, 0])
+    return connection_pool.insert_new_user([username, name, email, phone, num_plate, salt, password, 0])
