@@ -3,8 +3,8 @@
 {% block content %}
 <div>
     <form action = "/register" method = "POST">
-        <input type = "text" name = "username" minlength = "6" maxlength = "25" pattern = "[a-zA-Z0-9-_. ]{6,25}" placeholder = "Username" required/><br/>
-        <input type = "text" name = "name" minlength = "6" maxlength = "30" pattern = "[a-zA-Z0-9-_.]{6,30}" placeholder = "Name" required/><br/>
+        <input type = "text" name = "username" minlength = "6" maxlength = "25" pattern = "[a-zA-Z0-9-_.]{6,25}" placeholder = "Username" required/><br/>
+        <input type = "text" name = "name" minlength = "6" maxlength = "30" pattern = "[a-zA-Z0-9-_. ]{6,30}" placeholder = "Name" required/><br/>
         <input type = "email" name = "email" minlength = "6" maxlength = "45" placeholder = "Email" required/><br/>
         <input type = "text" name = "phone" minlength = "10" maxlength = "15" pattern = "(\+[0-9]{11,})|([0-9]{10,})" placeholder = "Phone" required/><br/>
         <input type = "text" name = "num_plate" minlength = "6" maxlength = "10" pattern = "(^[a-zA-Z]{1,2})( ?)([0-9]{2,3})( ?)([a-zA-Z]{3})|((^[a-zA-Z]{1,2})( ?)([0-9]){6})" placeholder = "Number plate" required/><br/>

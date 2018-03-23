@@ -1,0 +1,11 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div>
+    <form action = "/login" method = "POST">
+        <input type = "text" name = "username" minlength = "6" maxlength = "25" pattern = "[a-zA-Z0-9-_.]{6,25}" placeholder = "Username" required/><br/>
+        <input type = "password" name = "password" minlength = "6" maxlength = "20" pattern = "[a-zA-Z0-9-_.,?!@#$&*<>:;]{6,20}" placeholder = "Password" required/><br/>
+        <input type = "submit" name = "login" value = "Login"/>
+    </form>
+</div>
+{% endblock content %}

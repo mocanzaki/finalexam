@@ -18,7 +18,7 @@ def login(username, password):
     [salt, pw, permission] = connection_pool.get_user_credentials(username)
     # Check if encrypted password is equal to the encrypted combination of the given password and the salt from the database
     if (pw == hashlib.sha512(password.encode() + salt.encode()).hexdigest()):
-        logging.getLogger('user_management').debug('Login succesfully for user: ' + username + ', with permission: ' + permission)
+        logging.getLogger('user_management').debug('Login succesfully for user: ' + username + ', with permission: ' + str(permission))
         # If so, return the permission of the user
         return permission
     else:
