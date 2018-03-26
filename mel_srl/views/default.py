@@ -1,5 +1,7 @@
 from pyramid.response import Response
 from pyramid.view import view_config
+from pyramid.security import remember, forget
+from pyramid.httpexceptions import HTTPFound
 import re, logging
 from ..scripts.db_conn import Connection 
 from ..scripts import user_management
@@ -14,6 +16,9 @@ from ..scripts import user_management
 
 @view_config(route_name='home', renderer='../templates/home.jinja2')
 def home(request):
+    session = request.session
+    for key in session:
+        print(str(key) + " : " + str(request.session[key]))
     return {'one': "one", 'project': 'mel_srl'}
 
 @view_config(route_name='login', renderer='../templates/login.jinja2', request_method = 'GET')
@@ -25,6 +30,9 @@ def login_POST(request):
     # Extract user data to be checked for login
     username = request.POST['username']
     password = request.POST['password']
+
+    # Retrieve session from request
+    session = request.session
 
     # Validate extracted data
     if not re.match("[a-zA-Z0-9-_.]{6,25}", username):
@@ -39,7 +47,11 @@ def login_POST(request):
 
     # Check for success
     if permission is not None:
-        return Response("User permission is: " + str(permission))
+        # Store unsensitive data in session
+        session['username'] = username
+        session['permission'] = permission
+
+        return HTTPFound(location = request.route_url('home'))
     else:
         return Response("Couldn't log in")
 
@@ -79,3 +91,10 @@ def register_POST(request):
         return {}
     else:
         return Response("Something went wrong.")
+
+@view_config(route_name='logout')
+def logout(request):
+    session = request.session
+    del session['username']
+    del session['permission']
+    return HTTPFound(location = request.route_url('home'))

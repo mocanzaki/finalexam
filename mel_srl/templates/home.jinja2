@@ -6,6 +6,6 @@
   <p class="lead">Welcome to <span class="font-normal">mel_srl</span>, a&nbsp;Pyramid application generated&nbsp;by<br><span class="font-normal">Cookiecutter</span>.</p>
 </div>
 <div>
-    <p>{{one}}</p>
+    <p>{{request.session['username']}}</p>
 </div>
 {% endblock content %}
