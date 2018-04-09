@@ -12,7 +12,13 @@
         <label for="password">Password:</label>
        <input type = "password" class = "form-control" name = "password" minlength = "6" maxlength = "20" pattern = "[a-zA-Z0-9-_.,?!@#$&*<>:;]{6,20}" placeholder = "Password" required/>
       </div>
-      <button type="submit" name = "login" class="btn btn-primary">Login</button>
+      <button type="submit" name = "login" class="btn btn-warning">Login</button>
     </form>
+    <br/>
+    {% if credential_error is defined %}
+      <div class="alert alert-danger">
+        Invalid user credentials! Please try again.
+      </div>
+    {% endif %}
 </div>
 {% endblock content %}

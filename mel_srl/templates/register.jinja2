@@ -28,7 +28,23 @@
         <label for="password">Password:</label>
         <input type = "password" class = "form-control" name = "password" minlength = "6" maxlength = "20" pattern = "[a-zA-Z0-9-_.,?!@#$&*<>:;]{6,20}" placeholder = "Password" required/>
         </div>
-        <button type = "submit" name = "register" class = "btn btn-primary">Register</button>
+        <button type = "submit" name = "register" class = "btn btn-warning">Register</button>
     </form>
+    <br/>
+    {% if credential_error is defined %}
+      <div class="alert alert-danger">
+        Invalid user data! Please try again.
+      </div>
+    {% endif %}
+    {% if username_error is defined %}
+      <div class="alert alert-danger">
+        Username already occupied! Please choose another.
+      </div>
+    {% endif %}
+    {% if successfully_registered is defined %}
+      <div class="alert alert-success">
+        Successfully registered! You can now login, using your credentials!
+      </div>
+    {% endif %}
 </div>
 {% endblock content %}

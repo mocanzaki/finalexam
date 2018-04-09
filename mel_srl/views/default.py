@@ -1,4 +1,5 @@
 from pyramid.response import Response
+from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 from pyramid.security import remember, forget
 from pyramid.httpexceptions import HTTPFound
@@ -16,14 +17,18 @@ from ..scripts import user_management
 
 @view_config(route_name='home', renderer='../templates/home.jinja2')
 def home(request):
-    session = request.session
-    for key in session:
-        print(str(key) + " : " + str(request.session[key]))
-    return {'one': "one", 'project': 'mel_srl'}
+    return {}
 
 @view_config(route_name='login', renderer='../templates/login.jinja2', request_method = 'GET')
 def login_GET(request):
-    return {'one': "alma", 'project': 'mel_srl'}
+    # Check if user is already logged in
+    session = request.session
+    if 'username' in session:
+        return HTTPFound(location = request.route_url('home'))
+    else:
+        return {}
+
+
 
 @view_config(route_name='login', renderer='../templates/login.jinja2', request_method = 'POST')
 def login_POST(request):
@@ -34,30 +39,46 @@ def login_POST(request):
     # Retrieve session from request
     session = request.session
 
-    # Validate extracted data
-    if not re.match("[a-zA-Z0-9-_.]{6,25}", username):
-        logging.getLogger('user_management').debug('Injection attack detected on login from:' + request.remote_addr)
-        return Response("Suspicious input on username!")
-    if not re.match("[a-zA-Z0-9-_.,?!@#$&*<>:;]{6,20}", password):
-        logging.getLogger('user_management').debug('Injection attack detected on login from:' + request.remote_addr)
-        return Response("Suspicious input on password!")
-
-    # Try to log in with the credentials
-    permission = user_management.login(username, password)
-
-    # Check for success
-    if permission is not None:
-        # Store unsensitive data in session
-        session['username'] = username
-        session['permission'] = permission
-
+    # Check if user is already logged in
+    if 'username' in session:
         return HTTPFound(location = request.route_url('home'))
     else:
-        return Response("Couldn't log in")
+        # Validate extracted data
+        if not re.match("[a-zA-Z0-9-_.]{6,25}", username):
+            logging.getLogger('user_management').debug('Injection attack detected on login from:' + request.remote_addr)
+            return render_to_response('../templates/login.jinja2',
+                                  {'credential_error' : True},
+                                  request=request)
+        if not re.match("[a-zA-Z0-9-_.,?!@#$&*<>:;]{6,20}", password):
+            logging.getLogger('user_management').debug('Injection attack detected on login from:' + request.remote_addr)
+            return render_to_response('../templates/login.jinja2',
+                                  {'credential_error' : True},
+                                  request=request)
+
+        # Try to log in with the credentials
+        permission = user_management.login(username, password)
+
+        # Check for success
+        if permission is not None:
+            # Store data in session
+            session['username'] = username
+            session['permission'] = permission
+
+            return HTTPFound(location = request.route_url('home'))
+        else:
+            return render_to_response('../templates/login.jinja2',
+                                  {'credential_error' : True},
+                                  request=request)
 
 @view_config(route_name='register', renderer='../templates/register.jinja2', request_method = 'GET')
 def register_GET(request):
-    return {}
+    # Check if user is already logged in
+    session = request.session
+    if 'username' in session:
+        return HTTPFound(location = request.route_url('home'))
+    else:
+        return {}
+
 
 @view_config(route_name='register', renderer='../templates/register.jinja2', request_method = 'POST')
 def register_POST(request):
@@ -69,32 +90,60 @@ def register_POST(request):
     num_plate = request.POST['num_plate']
     password = request.POST['password']
 
-    # Validate extracted data
-    if not re.match("[a-zA-Z0-9-_.]{6,25}", username):
-        logging.getLogger('user_management').debug('Injection attack detected on register from:' + request.remote_addr)
-        return Response("Suspicious input on username!")
-    if not re.match("[a-zA-Z0-9-_. ]{6,30}", name):
-        logging.getLogger('user_management').debug('Injection attack detected on register from:' + request.remote_addr)
-        return Response("Suspicious input on name!")
-    if not re.match("(\+[0-9]{11,})|([0-9]{10,})", phone):
-        logging.getLogger('user_management').debug('Injection attack detected on register from:' + request.remote_addr)
-        return Response("Suspicious input on phone!")
-    if not re.match("(^[a-zA-Z]{1,2})( ?)([0-9]{2,3})( ?)([a-zA-Z]{3})|((^[a-zA-Z]{1,2})( ?)([0-9]){6})", num_plate):
-        logging.getLogger('user_management').debug('Injection attack detected on register from:' + request.remote_addr)
-        return Response("Suspicious input on number plate!")
-    if not re.match("[a-zA-Z0-9-_.,?!@#$&*<>:;]{6,20}", password):
-        logging.getLogger('user_management').debug('Injection attack detected on register from:' + request.remote_addr)
-        return Response("Suspicious input on password!")
-
-    # Try to submit data to the database
-    if user_management.register(username, name, email, phone, num_plate, password):
-        return {}
+    # Check if user is already logged in
+    session = request.session
+    if 'username' in session:
+        return HTTPFound(location = request.route_url('home'))
     else:
-        return Response("Something went wrong.")
+        # Validate extracted data
+        if not re.match("[a-zA-Z0-9-_.]{6,25}", username):
+            logging.getLogger('user_management').debug('Injection attack detected on register from:' + request.remote_addr)
+            return render_to_response('../templates/register.jinja2',
+                                  {'credential_error' : True},
+                                  request=request)
+        if not re.match("[a-zA-Z0-9-_. ]{6,30}", name):
+            logging.getLogger('user_management').debug('Injection attack detected on register from:' + request.remote_addr)
+            return render_to_response('../templates/register.jinja2',
+                                  {'credential_error' : True},
+                                  request=request)
+        if not re.match("(\+[0-9]{11,})|([0-9]{10,})", phone):
+            logging.getLogger('user_management').debug('Injection attack detected on register from:' + request.remote_addr)
+            return render_to_response('../templates/register.jinja2',
+                                  {'credential_error' : True},
+                                  request=request)
+        if not re.match("(^[a-zA-Z]{1,2})( ?)([0-9]{2,3})( ?)([a-zA-Z]{3})|((^[a-zA-Z]{1,2})( ?)([0-9]){6})", num_plate):
+            logging.getLogger('user_management').debug('Injection attack detected on register from:' + request.remote_addr)
+            return render_to_response('../templates/register.jinja2',
+                                  {'credential_error' : True},
+                                  request=request)
+        if not re.match("[a-zA-Z0-9-_.,?!@#$&*<>:;]{6,20}", password):
+            logging.getLogger('user_management').debug('Injection attack detected on register from:' + request.remote_addr)
+            return render_to_response('../templates/register.jinja2',
+                                  {'credential_error' : True},
+                                  request=request)
+
+        # Check if username is useable
+        if not user_management.check_if_username_is_useable(username):
+            return render_to_response('../templates/register.jinja2',
+                                  {'username_error' : True},
+                                  request=request)
+
+        # Try to submit data to the database
+        if user_management.register(username, name, email, phone, num_plate, password):
+            return render_to_response('../templates/register.jinja2',
+                                  {'successfully_registered' : True},
+                                  request=request)
+        else:
+            return render_to_response('../templates/register.jinja2',
+                                  {'credential_error' : True},
+                                  request=request)
 
 @view_config(route_name='logout')
 def logout(request):
     session = request.session
-    del session['username']
-    del session['permission']
+    try:
+        del session['username']
+        del session['permission']
+    except:
+        pass
     return HTTPFound(location = request.route_url('home'))

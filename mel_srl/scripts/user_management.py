@@ -42,3 +42,9 @@ def register(username, name, email, phone, num_plate, password):
 
     # Return insertion result
     return connection_pool.insert_new_user([username, name, email, phone, num_plate, salt, password, 0])
+
+def check_if_username_is_useable(username):
+    username = escape_sql_input(username)
+    query = ("SELECT COUNT(*) FROM `users` WHERE username LIKE '{}'").format(username)
+    
+    return connection_pool.select_query(query)[0][0] == 0
