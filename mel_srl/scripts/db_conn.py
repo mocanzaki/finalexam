@@ -98,5 +98,16 @@ class Connection:
     # OUTPUT - a list of the user credentials
     def get_user_credentials(self, username):
         query = "SELECT `salt`, `password`, `permission` FROM users WHERE `username` LIKE '{}'".format(username)
-        self.logger.debug(query)
         return self.select_query(query)[0]
+
+    def get_schedule_of_day(self, year, month, day):
+        query = ("SELECT * FROM schedule WHERE DATE(date) = '{}-{}-{}'").format(year, month, day)
+        return self.select_query(query)
+
+    def get_fillness_of_month(self, year, month):
+        query = ("SELECT DAY(date) as day, COUNT(*) as total FROM schedule WHERE YEAR(date) = {} AND MONTH(date) = {} GROUP BY DAY(date)").format(year, month)
+        return self.select_query(query)
+
+    def get_occupied_hours(self, year, month, day):
+        query = ("SELECT HOUR(date) as hour, MINUTE(date) as minute FROM schedule WHERE YEAR(date) = {} AND MONTH(date) = {} AND DAY(date) = {}").format(year, month, day)
+        return self.select_query(query)

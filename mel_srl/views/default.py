@@ -3,9 +3,11 @@ from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 from pyramid.security import remember, forget
 from pyramid.httpexceptions import HTTPFound
-import re, logging
+import re, logging, datetime
+from calendar import monthrange
 from ..scripts.db_conn import Connection 
 from ..scripts import user_management
+from ..scripts import schedule_management
 
 # File used for describing the template rendering and the actions on every route
 # SYNTAX
@@ -140,6 +142,7 @@ def register_POST(request):
 
 @view_config(route_name='logout')
 def logout(request):
+    # End Session, log out user
     session = request.session
     try:
         del session['username']
@@ -147,3 +150,49 @@ def logout(request):
     except:
         pass
     return HTTPFound(location = request.route_url('home'))
+
+@view_config(route_name='schedule', renderer='../templates/schedule.jinja2', request_method='GET')
+def schedule(request):
+  # Display deafult calendar, with current month
+  now = datetime.datetime.now()
+  days = schedule_management.get_fillness_of_month(now.year, now.month)
+  return {'year': now.year, 'month': (now.month, now.strftime("%B")), 'days': monthrange(now.year, now.month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
+
+######################## JSON OBJECT ROUTES ######################
+## The methods below are used for async calls from the frontend ##
+##################################################################
+
+
+# Returns the month name, month number, number of days in the month, how many days should be skipped, emptyness of the days
+# OUTPUT: {month: [month number, month name], days: [days to be skipped, days in the month]}
+@view_config(route_name='get_dates', renderer='json', request_method='POST')
+def get_dates(request):
+    year = int(request.POST['year'])
+    month = int(request.POST['month'])
+    days = schedule_management.get_fillness_of_month(year, month)
+    return {'month': (month, datetime.datetime(year, month, 1, 1, 1, 1).strftime("%B")), 'days': monthrange(year, month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
+
+# Returns the month name, month number, number of days in the month, how many days should be skipped, emptyness of the days
+# OUTPUT: {month: [month number, month name], days: [days to be skipped, days in the month]}
+@view_config(route_name='get_hours', renderer='json', request_method='POST')
+def get_hours(request):
+    year = int(request.POST['year'])
+    month = int(request.POST['month'])
+    day = int(request.POST['day'])
+
+    hours = schedule_management.get_remaining_hours(year, month, day)
+
+    return {'hours' : hours}
+
+@view_config(route_name='test', renderer='json', request_method='GET')
+def on_date_click(request):
+    year = request.matchdict['year']
+    month = request.matchdict['month']
+    day = request.matchdict['day']
+    result = Connection().get_schedule_of_day(year, month, day)
+    id = result[0]
+    user = result[1]
+    description = result[2]
+    date = result[3]
+    return {'id' : id, 'user' : user, 'description' : description, 'year' : date.year, 'month' : date.month, 'day' : date.day, 'hour' : date.hour, 'minute' : date.minute}
+

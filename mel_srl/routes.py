@@ -10,3 +10,7 @@ def includeme(config):
     config.add_route('login', '/login')
     config.add_route('register', '/register')
     config.add_route('logout', '/logout')
+    config.add_route('schedule', '/schedule')
+    config.add_route('get_dates', '/json/get_dates')
+    config.add_route('get_hours', '/json/get_hours')
+    config.add_route('test', '/json/test/{year}/{month}/{day}')

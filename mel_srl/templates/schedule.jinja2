@@ -1,0 +1,45 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div class="month"> 
+  <ul class ="calendar">
+    <li class="prev" onclick="prevmonth()"">&#10094;</li>
+    <li class="next" onclick="nextmonth()">&#10095;</li>
+    <li style="list-style-type: none;"><span id="month_name">{{month[1]}}</span><br><span style="font-size:18px" id="year">{{year}}</span></li>
+    <li style="display:none" id = "month_no">{{month[0]}}</li>
+  </ul>
+</div>
+
+<ul class="weekdays">
+  <li>Mo</li>
+  <li>Tu</li>
+  <li>We</li>
+  <li>Th</li>
+  <li>Fr</li>
+  <li>Sa</li>
+  <li>Su</li>
+</ul>
+
+<ul class="days" id ="days">
+    {% for day in range(1, days[0] + 1) %}
+        <li id = "disabled"></li>
+    {% endfor %}
+    {% for day in range(1, days[1] + 1) %}
+        {% if (day + days[0]) % 7 == 0 %} 
+        <li id = "disabled">{{day}}</li>
+        {% else %}
+          {% if day in filled_days %}
+            <li class = "filled" id = "disabled">{{day}}</li>
+          {% elif day in average_days %}
+            <li class = "average" onclick = 'set_time(this)'>{{day}}</li>
+          {% else %}
+            <li class = "empty" onclick = 'set_time(this)'>{{day}}</li>
+          {% endif %}
+        {% endif %}
+    {% endfor %}
+</ul>
+<br/>
+<div class="form-group form-inline" id = "select_time">
+</div>
+
+{% endblock content %}
