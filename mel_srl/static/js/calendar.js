@@ -105,47 +105,102 @@ function nextmonth(){
 }
 
 function set_time(obj){
+    if(document.getElementById("active") != null)
+        document.getElementById("active").removeAttribute("id");
+    obj.setAttribute("id", "active");
     var year = parseInt(document.getElementById("year").innerHTML);
     var month = parseInt(document.getElementById("month_no").innerHTML);
     var day = parseInt(obj.innerHTML);
 
-    var select_list = '<label for="time">Time:</label><select class="form-control" id="hour">';
+    var inner_doc = '<label for="time">Time:</label><select class="form-control" id="hour">';
 
     var hours = [];
     var minutes = [];
 
     var xhttp = new XMLHttpRequest();
-    xhttp.open("POST", "json/get_hours", true);
+    xhttp.open("POST", "/json/get_data_for_scheduling", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             hour = JSON.parse(this.responseText).hours;
-            console.log(hour);
+            services = JSON.parse(this.responseText).services;
+            num_plates = JSON.parse(this.responseText).num_plates;
+
             for(var i = 0; i < hour.length; i++){
 
                 if(hour[i].startsWith("1")){
                     if(hour[i].length == 3){
-                        select_list = select_list + '<option>' + hour[i].substring(0,2) + ':' + hour[i].substring(2,3) + '</option>';
+                        inner_doc = inner_doc + '<option>' + hour[i].substring(0,2) + ':' + hour[i].substring(2,3) + '</option>';
                     }
                     else{
-                        select_list = select_list + '<option>' + hour[i].substring(0,2) + ':' + hour[i].substring(2,4) + '</option>';
+                        inner_doc = inner_doc + '<option>' + hour[i].substring(0,2) + ':' + hour[i].substring(2,4) + '</option>';
                     }
                 }
 
                 else{
                     if(hour[i].length == 2){
-                        select_list = select_list + '<option>' + hour[i].substring(0,1) + ':' + hour[i].substring(1,2) + '</option>';
+                        inner_doc = inner_doc + '<option>' + hour[i].substring(0,1) + ':' + hour[i].substring(1,2) + '</option>';
                     }
                     else{
-                        select_list = select_list + '<option>' + hour[i].substring(0,1) + ':' + hour[i].substring(1,3) + '</option>';
+                        inner_doc = inner_doc + '<option>' + hour[i].substring(0,1) + ':' + hour[i].substring(1,3) + '</option>';
                     }
                 }
             }
 
-            document.getElementById("select_time").innerHTML = select_list + '</select><button type = "submit" class="btn btn-warning" value="submit">Submit</button>';
+            inner_doc = inner_doc + '</select><label for="num_plate">Number plate:</label><select class="form-control" id="num_plate">';
+
+            for(var i = 0; i < num_plates.length; i++){
+
+                inner_doc = inner_doc + '<option>' + num_plates[i] + '</option>';
+                
+            }
+
+            inner_doc = inner_doc + '</select><label for="services">Service:</label><select class="form-control" id="services">';
+
+            for(var i = 0; i < services.length; i++){
+
+                inner_doc = inner_doc + '<option>' + services[i][1] + '</option>';
+                
+            }
+
+            inner_doc = inner_doc + '</select><button type = "submit" class="btn btn-warning" value="schedule" onclick ="schedule()">Schedule</button>';
+            document.getElementById("select_time").innerHTML = inner_doc;
 
         }
     };
     var params = "year=" + year + "&month=" + month + "&day=" + day;
     xhttp.send(params);
+}
+
+function schedule(){
+    var year = parseInt(document.getElementById("year").innerHTML);
+    var month = parseInt(document.getElementById("month_no").innerHTML);
+    var day = parseInt(document.getElementById("active").innerHTML);
+    var time = document.getElementById("hour").options[document.getElementById("hour").options.selectedIndex].text;
+    var service_id = parseInt(document.getElementById("services").options.selectedIndex) + 1;
+    var hour = parseInt(time.split(":")[0]);
+    var minute = parseInt(time.split(":")[1]);
+    try{
+        var num_plate = document.getElementById("num_plate").options[document.getElementById("num_plate").options.selectedIndex].text;
+        document.getElementById("num_plate").remove(document.getElementById("num_plate").selectedIndex);
+        document.getElementById("hour").remove(document.getElementById("hour").selectedIndex);
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "/json/make_schedule", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                if (JSON.parse(this.responseText).success == 'true')
+                    alert("OK!");
+                else{
+                    alert("NOT OK!");
+                }
+            }
+        };
+
+        var params = "year=" + year + "&month=" + month + "&day=" + day + "&hour=" + hour + "&minute=" + minute + "&service_id=" + service_id + "&num_plate=" + num_plate;
+        xhttp.send(params);
+    }catch(err){
+        alert("Please select a number plate! In case the list is empty, you already have scheduled all your cars!");
+    }
 }

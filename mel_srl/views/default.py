@@ -5,9 +5,9 @@ from pyramid.security import remember, forget
 from pyramid.httpexceptions import HTTPFound
 import re, logging, datetime
 from calendar import monthrange
-from ..scripts.db_conn import Connection 
 from ..scripts import user_management
 from ..scripts import schedule_management
+from ..scripts import service_management
 
 # File used for describing the template rendering and the actions on every route
 # SYNTAX
@@ -158,6 +158,10 @@ def schedule(request):
   days = schedule_management.get_fillness_of_month(now.year, now.month)
   return {'year': now.year, 'month': (now.month, now.strftime("%B")), 'days': monthrange(now.year, now.month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
 
+
+
+
+
 ######################## JSON OBJECT ROUTES ######################
 ## The methods below are used for async calls from the frontend ##
 ##################################################################
@@ -174,25 +178,32 @@ def get_dates(request):
 
 # Returns the month name, month number, number of days in the month, how many days should be skipped, emptyness of the days
 # OUTPUT: {month: [month number, month name], days: [days to be skipped, days in the month]}
-@view_config(route_name='get_hours', renderer='json', request_method='POST')
-def get_hours(request):
+@view_config(route_name='get_data_for_scheduling', renderer='json', request_method='POST')
+def get_data_for_scheduling(request):
     year = int(request.POST['year'])
     month = int(request.POST['month'])
     day = int(request.POST['day'])
 
     hours = schedule_management.get_remaining_hours(year, month, day)
+    services = service_management.get_services()
+    num_plates = schedule_management.get_num_plates_available_for_scheduling(request.session['username'])
 
-    return {'hours' : hours}
+    return {'hours' : hours, 'services' : services, 'num_plates' : num_plates}
 
-@view_config(route_name='test', renderer='json', request_method='GET')
-def on_date_click(request):
-    year = request.matchdict['year']
-    month = request.matchdict['month']
-    day = request.matchdict['day']
-    result = Connection().get_schedule_of_day(year, month, day)
-    id = result[0]
-    user = result[1]
-    description = result[2]
-    date = result[3]
-    return {'id' : id, 'user' : user, 'description' : description, 'year' : date.year, 'month' : date.month, 'day' : date.day, 'hour' : date.hour, 'minute' : date.minute}
+# Makes the schedule on the requested date
+# OUTPUT: {success : true / false}
+@view_config(route_name='make_schedule', renderer='json', request_method='POST')
+def make_schedule(request):
+    year = int(request.POST['year'])
+    month = int(request.POST['month'])
+    day = int(request.POST['day'])
+    hour = int(request.POST['hour'])
+    minute = int(request.POST['minute'])
+    service_id = int(request.POST['service_id'])
+    num_plate = request.POST['num_plate']
+
+    if schedule_management.make_schedule(year, month, day, hour, minute, num_plate, service_id):
+      return {'success' : 'true'}
+    else:
+      return {'success' : 'false'}
 

@@ -35,14 +35,18 @@ def register(username, name, email, phone, num_plate, password):
     password = escape_sql_input(password)
     name = escape_sql_input(name)
     email = escape_sql_input(email)
+    num_plate = escape_sql_input(num_plate)
 
     # Build salt and password
     salt = uuid.uuid4().hex
     password = hashlib.sha512(password.encode() + salt.encode()).hexdigest()
 
     # Return insertion result
-    return connection_pool.insert_new_user([username, name, email, phone, num_plate, salt, password, 0])
+    return connection_pool.insert_new_user([username, name, email, phone, salt, password, 0], num_plate)
 
+# Check is username is available for register
+# INPUT - Raw username
+# OUTPUT - True / False depending if the username is occupied
 def check_if_username_is_useable(username):
     username = escape_sql_input(username)
     query = ("SELECT COUNT(*) FROM `users` WHERE username LIKE '{}'").format(username)

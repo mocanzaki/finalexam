@@ -17,7 +17,6 @@ class Connection:
             "user"     : "root",
             "password" : "1234",
             "database" : "final_exam",
-            #"database" : "test",
         }
 
         # Creates the MySQL connection pool, using the above config, and a pool with 32 connections
@@ -60,22 +59,24 @@ class Connection:
     # Executes a user insertion in the table
     # INPUT - list of user data  IN ORDER AND ESCAPED!
     # OUTPUT - boolean, depending on the result of the insertion
-    def insert_new_user(self, user_data):
+    def insert_new_user(self, user_data, num_plate):
         con = self.get_connection()
-        query = ("INSERT INTO  users (`username`, `name`, `email`, `phone`, `num_plate`, `salt`, `password`, `permission`) "
-                     "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', {})").format(*user_data)
+        query = ("INSERT INTO  users (`username`, `name`, `email`, `phone`, `salt`, `password`, `permission`) "
+                     "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', {}); INSERT INTO num_plates (`user_id`, `name`) VALUES ( (SELECT id FROM users WHERE username LIKE '{}'), '{}')").format(*user_data, user_data[0], num_plate)
         self.logger.debug(query)
 
         try:
-            cursor = con.cursor()
+            cursor = con.cursor(buffered=True)
 
-            cursor.execute(query)
+            cursor.execute(query, multi=True)
+
+            for cur in cursor.execute(query, multi=True):
+                if cur.with_rows:
+                    cur.fetchall()
 
             cursor.close()
             con.commit()
             con.close()
-
-            self.logger.info('Successfully inserted new user!')
 
             return True
 
@@ -105,9 +106,41 @@ class Connection:
         return self.select_query(query)
 
     def get_fillness_of_month(self, year, month):
-        query = ("SELECT DAY(date) as day, COUNT(*) as total FROM schedule WHERE YEAR(date) = {} AND MONTH(date) = {} GROUP BY DAY(date)").format(year, month)
+        query = ("SELECT DAY(date) as day, COUNT(*) as total FROM schedule WHERE YEAR(date) = '{}' AND MONTH(date) = '{}' GROUP BY DAY(date)").format(year, month)
         return self.select_query(query)
 
     def get_occupied_hours(self, year, month, day):
-        query = ("SELECT HOUR(date) as hour, MINUTE(date) as minute FROM schedule WHERE YEAR(date) = {} AND MONTH(date) = {} AND DAY(date) = {}").format(year, month, day)
+        query = ("SELECT HOUR(date) as hour, MINUTE(date) as minute FROM schedule WHERE YEAR(date) = '{}' AND MONTH(date) = '{}' AND DAY(date) = '{}'").format(year, month, day)
         return self.select_query(query)
+
+    def insert_new_schedule(self, num_plate, date, service_id):
+        con = self.get_connection()
+        query = ("INSERT INTO schedule (`num_plate_id`, `date`, `service_id`) VALUES((SELECT id FROM num_plates WHERE name LIKE '{}'), '{}', '{}')").format(num_plate, date, service_id)
+        self.logger.debug(query)
+
+        try:
+            cursor = con.cursor()
+
+            cursor.execute(query)
+
+            cursor.close()
+            con.commit()
+            con.close()
+
+            self.logger.info('Successfully inserted new schedule!')
+
+            return True
+
+        except :
+            self.logger.error("Something bad happened, during inserting a new schedule!")
+
+            try:
+                con.rollback()
+                self.logger.debug("The transaction of the new schedule insertion was successfully rollbacked!")
+
+            except:
+                self.logger.error("Error rolling back the transaction of the schedule insertion!")
+                pass
+
+            con.close()
+            return False
