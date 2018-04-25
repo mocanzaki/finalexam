@@ -159,7 +159,12 @@ def schedule(request):
   return {'year': now.year, 'month': (now.month, now.strftime("%B")), 'days': monthrange(now.year, now.month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
 
 
-
+@view_config(route_name='admin_schedule', renderer='../templates/schedule.jinja2', request_method='GET')
+def admin_schedule(request):
+  # Display deafult calendar, with current month
+  now = datetime.datetime.now()
+  days = schedule_management.get_fillness_of_month(now.year, now.month)
+  return {'year': now.year, 'month': (now.month, now.strftime("%B")), 'days': monthrange(now.year, now.month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
 
 
 ######################## JSON OBJECT ROUTES ######################
@@ -174,7 +179,7 @@ def get_dates(request):
     year = int(request.POST['year'])
     month = int(request.POST['month'])
     days = schedule_management.get_fillness_of_month(year, month)
-    return {'month': (month, datetime.datetime(year, month, 1, 1, 1, 1).strftime("%B")), 'days': monthrange(year, month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
+    return {'month': (month, datetime.datetime(year, month, 1, 1, 1, 1).strftime("%B")), 'days': monthrange(year, month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2], 'permission' : request.session['permission']}
 
 # Returns the month name, month number, number of days in the month, how many days should be skipped, emptyness of the days
 # OUTPUT: {month: [month number, month name], days: [days to be skipped, days in the month]}
@@ -207,3 +212,15 @@ def make_schedule(request):
     else:
       return {'success' : 'false'}
 
+
+# Returns the scheduled cars on a day
+# OUTPUT: {month: [month number, month name], days: [days to be skipped, days in the month]}
+@view_config(route_name='get_schedules_of_day', renderer='json', request_method='POST')
+def get_schedules_of_day(request):
+    year = int(request.POST['year'])
+    month = int(request.POST['month'])
+    day = int(request.POST['day'])
+
+    hour, minute, name, num_plate, service = schedule_management.get_schedule_of_day(year, month, day)
+
+    return {'hour' : hour, 'minute' : minute, 'name' : name, 'num_plate' : num_plate, 'service' : service}

@@ -93,14 +93,23 @@
     color: green;
 }
 
-#select_time{
+#day_content{
     margin-left: 5%;
+    margin-right: 5%;
 }
 
-#select_time label{
+#day_content label{
     margin-right: 2%;
 }
 
-#select_time select{
+#day_content select{
     margin-right: 2%;
+}
+
+#day_content td{
+    text-align : center;
+}
+
+#day_content th{
+    text-align : center;
 }

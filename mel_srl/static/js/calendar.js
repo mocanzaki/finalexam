@@ -22,6 +22,7 @@ function prevmonth(){
             days[1] = parseInt(days[1]);
             var filled_days = JSON.parse(this.responseText).filled_days;
             var average_days = JSON.parse(this.responseText).average_days;
+            var permission = parseInt(JSON.parse(this.responseText).permission);
             var days_list = "";
 
             for(var i = 1; i < days[0] + 1; i++){
@@ -33,12 +34,21 @@ function prevmonth(){
                     days_list = days_list + "<li id = 'disabled'>" + i + "</li>";
                 }
                 else{
-                    if(filled_days.includes(i))
-                        days_list = days_list + "<li class = 'filled' id = 'disabled'>" + i + "</li>";
-                    else if(average_days.includes(i))
-                        days_list = days_list + "<li class = 'average' onclick = 'set_time(this)'>" + i + "</li>";
-                    else
-                        days_list = days_list + "<li class = 'empty' onclick = 'set_time(this)'>" + i + "</li>";
+                    if(permission == 0){
+                        if(filled_days.includes(i))
+                            days_list = days_list + "<li class = 'filled' id = 'disabled'>" + i + "</li>";
+                        else if(average_days.includes(i))
+                            days_list = days_list + "<li class = 'average' onclick = 'set_time(this)'>" + i + "</li>";
+                        else
+                            days_list = days_list + "<li class = 'empty' onclick = 'set_time(this)'>" + i + "</li>";
+                    }else{
+                        if(filled_days.includes(i))
+                            days_list = days_list + "<li class = 'filled' id = 'disabled'>" + i + "</li>";
+                        else if(average_days.includes(i))
+                            days_list = days_list + "<li class = 'average' onclick = 'get_schedule(this)'>" + i + "</li>";
+                        else
+                            days_list = days_list + "<li class = 'empty' onclick = 'get_schedule(this)'>" + i + "</li>";
+                    }
                 }
             }
 
@@ -86,12 +96,21 @@ function nextmonth(){
                     days_list = days_list + "<li id = 'disabled'>" + i + "</li>";
                 }
                 else{
-                    if(filled_days.includes(i))
-                        days_list = days_list + "<li class = 'filled' id = 'disabled'>" + i + "</li>";
-                    else if(average_days.includes(i))
-                        days_list = days_list + "<li class = 'average' onclick = 'set_time(this)'>" + i + "</li>";
-                    else
-                        days_list = days_list + "<li class = 'empty' onclick = 'set_time(this)'>" + i + "</li>";
+                    if(permission == 0){
+                        if(filled_days.includes(i))
+                            days_list = days_list + "<li class = 'filled' id = 'disabled'>" + i + "</li>";
+                        else if(average_days.includes(i))
+                            days_list = days_list + "<li class = 'average' onclick = 'set_time(this)'>" + i + "</li>";
+                        else
+                            days_list = days_list + "<li class = 'empty' onclick = 'set_time(this)'>" + i + "</li>";
+                    }else{
+                        if(filled_days.includes(i))
+                            days_list = days_list + "<li class = 'filled' id = 'disabled'>" + i + "</li>";
+                        else if(average_days.includes(i))
+                            days_list = days_list + "<li class = 'average' onclick = 'get_schedule(this)'>" + i + "</li>";
+                        else
+                            days_list = days_list + "<li class = 'empty' onclick = 'get_schedule(this)'>" + i + "</li>";
+                    }
                 }
             }
 
@@ -164,7 +183,7 @@ function set_time(obj){
             }
 
             inner_doc = inner_doc + '</select><button type = "submit" class="btn btn-warning" value="schedule" onclick ="schedule()">Schedule</button>';
-            document.getElementById("select_time").innerHTML = inner_doc;
+            document.getElementById("day_content").innerHTML = inner_doc;
 
         }
     };
@@ -203,4 +222,56 @@ function schedule(){
     }catch(err){
         alert("Please select a number plate! In case the list is empty, you already have scheduled all your cars!");
     }
+}
+
+function get_schedule(obj){
+    if(document.getElementById("active") != null)
+        document.getElementById("active").removeAttribute("id");
+    obj.setAttribute("id", "active");
+    var year = parseInt(document.getElementById("year").innerHTML);
+    var month = parseInt(document.getElementById("month_no").innerHTML);
+    var day = parseInt(obj.innerHTML);
+
+    var inner_doc = '<table class="table table-hover"><thead class = "thead-dark"><tr><th>Time</th><th>Name</th><th>Number plate</th><th>Service</th></tr></thead><tbody>';
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "/json/get_schedules_of_day", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var hour = JSON.parse(this.responseText).hour;
+            var minute = JSON.parse(this.responseText).minute;  
+            var name = JSON.parse(this.responseText).name; 
+            var num_plate = JSON.parse(this.responseText).num_plate; 
+            var service = JSON.parse(this.responseText).service; 
+
+            var k = 0;
+
+            for(var i = 8; i < 17; i++){
+
+                if(k < hour.length && parseInt(hour[k]) == i){
+                    while(k < hour.length && parseInt(hour[k]) == i){
+                        console.log(hour[k]);
+                        console.log(minute[k]);
+                        console.log(name[k]);
+                        console.log(num_plate[k]);
+                        console.log(service[k]);
+                        inner_doc = inner_doc + "<tr><td>" + hour[k] + ":" + minute[k] + "</td><td>" + name[k] + "</td><td>" + num_plate[k] + "</td><td>" + service[k] + "</td></tr>";
+
+                        k = k + 1;
+                    }
+                }
+                else{
+                    inner_doc = inner_doc + "<tr><td>" + i + ":00</td><td>-</td><td>-</td><td>-</td></tr>";
+                    inner_doc = inner_doc + "<tr><td>" + i + ":30</td><td>-</td><td>-</td><td>-</td></tr>";
+                }
+            }         
+
+            inner_doc = inner_doc + '</tbody></table>';
+            console.log(hour.indexOf(8))
+            document.getElementById("day_content").innerHTML = inner_doc;
+        }
+    };
+    var params = "year=" + year + "&month=" + month + "&day=" + day;
+    xhttp.send(params);
 }

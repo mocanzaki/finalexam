@@ -26,20 +26,34 @@
     {% endfor %}
     {% for day in range(1, days[1] + 1) %}
         {% if (day + days[0]) % 7 == 0 %} 
-        <li id = "disabled">{{day}}</li>
+          <li id = "disabled">{{day}}</li>
         {% else %}
-          {% if day in filled_days %}
-            <li class = "filled" id = "disabled">{{day}}</li>
-          {% elif day in average_days %}
-            <li class = "average" onclick = 'set_time(this)'>{{day}}</li>
+          {% if request.session['permission'] == 0 %}
+            {% if day in filled_days %}
+              <li class = "filled" id = "disabled">{{day}}</li>
+            {% elif day in average_days %}
+              <li class = "average" onclick = 'set_time(this)'>{{day}}</li>
+            {% else %}
+              <li class = "empty" onclick = 'set_time(this)'>{{day}}</li>
+            {% endif %}
           {% else %}
-            <li class = "empty" onclick = 'set_time(this)'>{{day}}</li>
+            {% if day in filled_days %}
+              <li class = "filled" id = "disabled">{{day}}</li>
+            {% elif day in average_days %}
+              <li class = "average" onclick = 'get_schedule(this)'>{{day}}</li>
+            {% else %}
+              <li class = "empty" onclick = 'get_schedule(this)'>{{day}}</li>
+            {% endif %}
           {% endif %}
         {% endif %}
     {% endfor %}
 </ul>
 <br/>
-<div class="form-group form-inline" id = "select_time">
+{% if request.session['permission'] == 1 %}
+  <div class="table-responsive-md" id = "day_content">
+{% else %}
+  <div class="form-group form-inline" id = "day_content">
+{% endif %}
 </div>
 
 {% endblock content %}

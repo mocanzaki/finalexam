@@ -65,8 +65,8 @@ def make_schedule(year, month, day, hour, minute, num_plate, service_id):
 # INPUT - Username
 # OUPUT - List of number plates
 def get_num_plates_available_for_scheduling(username):
-    query = ("SELECT name FROM `num_plates` WHERE `user_id` = (SELECT id FROM `users` WHERE `username` LIKE '{}') AND name NOT IN (SELECT name FROM `num_plates` WHERE id IN (SELECT num_plate_id FROM schedule WHERE date > NOW()))").format(username)
-    print(query)
+    query = ("SELECT name FROM `num_plates` WHERE `user_id` = (SELECT id FROM `users` WHERE `username` LIKE '{}') "
+            "AND name NOT IN (SELECT name FROM `num_plates` WHERE id IN (SELECT num_plate_id FROM schedule WHERE date > NOW()))").format(username)
     return connection_pool.select_query(query)
 
 # Checks if a number plate is already scheduled for a future date
@@ -75,5 +75,32 @@ def get_num_plates_available_for_scheduling(username):
 def check_if_num_plate_is_scheduled(num_plate):
     query = ("SELECT COUNT(*) FROM `schedule` WHERE num_plate_id = (SELECT id FROM num_plates WHERE name LIKE '{}') AND date > NOW()").format(num_plate)
     return connection_pool.select_query(query)[0][0] == 0
+
+
+
+# Return all number plates for a user which aren't scheduled yet
+# INPUT - Year, Month, Day
+# OUPUT - 5 lists containing the hours, minutes, names, number plates, services
+def get_schedule_of_day(year, month, day):
+    query = ("SELECT HOUR(date), MINUTE(date), users.name, num_plates.name, services.description FROM schedule, users, num_plates, services"
+            " WHERE YEAR(date) = {} AND MONTH(date) = {} AND DAY(date) = {} AND num_plates.id = schedule.num_plate_id AND"
+            " services.id = schedule.service_id AND users.id = num_plates.user_id ORDER BY date ASC;").format(year,month,day)
+    print(query)
+    result = connection_pool.select_query(query)
+
+    hour = list()
+    minute = list()
+    name = list()
+    number_plate = list()
+    service = list()
+
+    for i in result:
+        hour.append(i[0])
+        minute.append(i[1])
+        name.append(i[2])
+        number_plate.append(i[3])
+        service.append(i[4])
+
+    return hour, minute, name, number_plate, service
 
 

@@ -27,6 +27,7 @@ def includeme(config):
     ################# ADMIN ROUTES ###########################
     ##########################################################
 
+    config.add_route('admin_schedule', '/admin_schedule')
 
     ##########################################################
     ################# JSON ROUTES ############################
@@ -35,3 +36,4 @@ def includeme(config):
     config.add_route('get_dates', '/json/get_dates')
     config.add_route('get_data_for_scheduling', '/json/get_data_for_scheduling')
     config.add_route('make_schedule', '/json/make_schedule')
+    config.add_route('get_schedules_of_day', '/json/get_schedules_of_day')
