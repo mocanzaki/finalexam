@@ -13,7 +13,8 @@ def get_fillness_of_month(year, month):
     empty_days = list()
 
     # Contains pairs, day - number of schedules
-    result = connection_pool.get_fillness_of_month(year, month)
+    query = ("SELECT DAY(date) as day, COUNT(*) as total FROM schedule WHERE YEAR(date) = '{}' AND MONTH(date) = '{}' GROUP BY DAY(date)").format(year, month)
+    result = connection_pool.select_query(query)
 
     for i in result:
         if(i[1] == 18):
@@ -36,7 +37,8 @@ def get_remaining_hours(year, month, day):
         free_hours.append(str(i)+"30")
 
     # contains the hours already scheduled
-    occupied_hour = connection_pool.get_occupied_hours(year, month, day)
+    query = ("SELECT HOUR(date) as hour, MINUTE(date) as minute FROM schedule WHERE YEAR(date) = '{}' AND MONTH(date) = '{}' AND DAY(date) = '{}'").format(year, month, day)
+    occupied_hour = connection_pool.select_query(query)
     occupied_hours = list()
 
     # convert into same format as the available hours
@@ -49,12 +51,13 @@ def get_remaining_hours(year, month, day):
 def make_schedule(year, month, day, hour, minute, num_plate, service_id):
      # build up datetime for mysql
     date = str(year) + "-" + str(month) + "-" + str(day) + " " + str(hour) + ":" + str(minute) + ":00"
+    query = ("INSERT INTO schedule (`num_plate_id`, `date`, `service_id`) VALUES((SELECT id FROM num_plates WHERE name LIKE '{}'), '{}', '{}')").format(num_plate, date, service_id)
 
      # check if date is really available and number plate isn't scheduled yet
     if (str(hour)+str(minute)) not in get_remaining_hours(year, month, day):
         return False
     elif check_if_num_plate_is_scheduled(num_plate):
-        if connection_pool.insert_new_schedule(num_plate, date, service_id):
+        if connection_pool.insert_query(query):
             return True
         else:
             return False
@@ -85,7 +88,7 @@ def get_schedule_of_day(year, month, day):
     query = ("SELECT HOUR(date), MINUTE(date), users.name, num_plates.name, services.description FROM schedule, users, num_plates, services"
             " WHERE YEAR(date) = {} AND MONTH(date) = {} AND DAY(date) = {} AND num_plates.id = schedule.num_plate_id AND"
             " services.id = schedule.service_id AND users.id = num_plates.user_id ORDER BY date ASC;").format(year,month,day)
-    print(query)
+
     result = connection_pool.select_query(query)
 
     hour = list()

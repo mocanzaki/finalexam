@@ -154,19 +154,21 @@ def logout(request):
 @view_config(route_name='schedule', renderer='../templates/schedule.jinja2', request_method='GET')
 def schedule(request):
   # Display deafult calendar, with current month
-  now = datetime.datetime.now()
-  days = schedule_management.get_fillness_of_month(now.year, now.month)
-  return {'year': now.year, 'month': (now.month, now.strftime("%B")), 'days': monthrange(now.year, now.month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
+  if 'username' in request.session:
+    now = datetime.datetime.now()
+    days = schedule_management.get_fillness_of_month(now.year, now.month)
+    return {'year': now.year, 'month': (now.month, now.strftime("%B")), 'days': monthrange(now.year, now.month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
+  else:
+    return HTTPFound(location = request.route_url('home'))
 
-
-@view_config(route_name='admin_schedule', renderer='../templates/schedule.jinja2', request_method='GET')
-def admin_schedule(request):
-  # Display deafult calendar, with current month
-  now = datetime.datetime.now()
-  days = schedule_management.get_fillness_of_month(now.year, now.month)
-  return {'year': now.year, 'month': (now.month, now.strftime("%B")), 'days': monthrange(now.year, now.month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
-
-
+@view_config(route_name='account', renderer='../templates/account.jinja2', request_method='GET')
+def account(request):
+  if 'username' in request.session:
+    res = user_management.get_user_data(request.session['username'])
+    return {'data': res}
+  else:
+    return HTTPFound(location = request.route_url('home'))
+    
 ######################## JSON OBJECT ROUTES ######################
 ## The methods below are used for async calls from the frontend ##
 ##################################################################
@@ -224,3 +226,20 @@ def get_schedules_of_day(request):
     hour, minute, name, num_plate, service = schedule_management.get_schedule_of_day(year, month, day)
 
     return {'hour' : hour, 'minute' : minute, 'name' : name, 'num_plate' : num_plate, 'service' : service}
+
+
+# Deletes a number plate from  a user
+# OUTPUT: succesfully deleted or not
+@view_config(route_name='delete_num_plate', renderer='json', request_method='POST')
+def delete_num_plate(request):
+    num_plate = str(request.POST['num_plate'])
+
+    res = user_management.get_num_plates_and_users()
+    result = False
+
+    for i in res:
+        if(num_plate == i[1] and request.session['username'] == i[0]):
+            user_management.delete_num_plate(num_plate)
+            result = True
+
+    return {'result' : str(result)}

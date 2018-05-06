@@ -37,7 +37,7 @@ class Connection:
             return None
 
     # Executes a select like query
-    # INPUT - query strin
+    # INPUT - query string
     # OUTPUT - list of lists, with every result
     def select_query(self, query):
         con = self.get_connection()
@@ -56,13 +56,113 @@ class Connection:
 
         return result
 
-    # Executes a user insertion in the table
-    # INPUT - list of user data  IN ORDER AND ESCAPED!
-    # OUTPUT - boolean, depending on the result of the insertion
-    def insert_new_user(self, user_data, num_plate):
+    # Executes a delete like query
+    # INPUT - query string
+    # OUTPUT - True / False depenging on result
+    def delete_query(self, query):
         con = self.get_connection()
-        query = ("INSERT INTO  users (`username`, `name`, `email`, `phone`, `salt`, `password`, `permission`) "
-                     "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', {}); INSERT INTO num_plates (`user_id`, `name`) VALUES ( (SELECT id FROM users WHERE username LIKE '{}'), '{}')").format(*user_data, user_data[0], num_plate)
+        self.logger.debug(query)
+
+        try:
+            cursor = con.cursor()
+
+            cursor.execute(query)
+
+            cursor.close()
+            con.commit()
+            con.close()
+
+            self.logger.info('Successfully executed delete query!')
+
+            return True
+
+        except :
+            self.logger.error("Something bad happened, during executing delete query!")
+
+            try:
+                con.rollback()
+                self.logger.debug("The transaction of the delete query was successfully rollbacked!")
+
+            except:
+                self.logger.error("Error rolling back the transaction of the delete query!")
+                pass
+
+            con.close()
+            return False
+
+    # Executes an insert like query
+    # INPUT - query string
+    # OUTPUT - True / False depenging on result
+    def insert_query(self, query):
+        con = self.get_connection()
+        self.logger.debug(query)
+
+        try:
+            cursor = con.cursor()
+
+            cursor.execute(query)
+
+            cursor.close()
+            con.commit()
+            con.close()
+
+            self.logger.info('Successfully executed insert query!')
+
+            return True
+
+        except :
+            self.logger.error("Something bad happened, during executing insert query!")
+
+            try:
+                con.rollback()
+                self.logger.debug("The transaction of the insert query was successfully rollbacked!")
+
+            except:
+                self.logger.error("Error rolling back the transaction of the insert query!")
+                pass
+
+            con.close()
+            return False
+
+    # Executes an update like query
+    # INPUT - query string
+    # OUTPUT - True / False depenging on result
+    def update_query(self, query):
+        con = self.get_connection()
+        self.logger.debug(query)
+
+        try:
+            cursor = con.cursor()
+
+            cursor.execute(query)
+
+            cursor.close()
+            con.commit()
+            con.close()
+
+            self.logger.info('Successfully executed update query!')
+
+            return True
+
+        except :
+            self.logger.error("Something bad happened, during executing update query!")
+
+            try:
+                con.rollback()
+                self.logger.debug("The transaction of the update query was successfully rollbacked!")
+
+            except:
+                self.logger.error("Error rolling back the transaction of the update query!")
+                pass
+
+            con.close()
+            return False
+
+    # Executes multiple insert like queries
+    # INPUT - one string containing queries separated with semicolon
+    # OUTPUT - True / False depenging on result
+    def multiple_insert_query(self, query):
+        con = self.get_connection()
         self.logger.debug(query)
 
         try:
@@ -78,68 +178,19 @@ class Connection:
             con.commit()
             con.close()
 
-            return True
-
-        except :
-            self.logger.error("Something bad happened, during inserting a new user!")
-
-            try:
-                con.rollback()
-                self.logger.debug("The transaction of the new user insertion was successfully rollbacked!")
-
-            except:
-                self.logger.error("Error rolling back the transaction of the user insertion!")
-                pass
-
-            con.close()
-            return False
-
-    # Returns the user login credentials for a certain user
-    # INPUT - username ESCAPED!
-    # OUTPUT - a list of the user credentials
-    def get_user_credentials(self, username):
-        query = "SELECT `salt`, `password`, `permission` FROM users WHERE `username` LIKE '{}'".format(username)
-        return self.select_query(query)[0]
-
-    def get_schedule_of_day(self, year, month, day):
-        query = ("SELECT * FROM schedule WHERE DATE(date) = '{}-{}-{}'").format(year, month, day)
-        return self.select_query(query)
-
-    def get_fillness_of_month(self, year, month):
-        query = ("SELECT DAY(date) as day, COUNT(*) as total FROM schedule WHERE YEAR(date) = '{}' AND MONTH(date) = '{}' GROUP BY DAY(date)").format(year, month)
-        return self.select_query(query)
-
-    def get_occupied_hours(self, year, month, day):
-        query = ("SELECT HOUR(date) as hour, MINUTE(date) as minute FROM schedule WHERE YEAR(date) = '{}' AND MONTH(date) = '{}' AND DAY(date) = '{}'").format(year, month, day)
-        return self.select_query(query)
-
-    def insert_new_schedule(self, num_plate, date, service_id):
-        con = self.get_connection()
-        query = ("INSERT INTO schedule (`num_plate_id`, `date`, `service_id`) VALUES((SELECT id FROM num_plates WHERE name LIKE '{}'), '{}', '{}')").format(num_plate, date, service_id)
-        self.logger.debug(query)
-
-        try:
-            cursor = con.cursor()
-
-            cursor.execute(query)
-
-            cursor.close()
-            con.commit()
-            con.close()
-
-            self.logger.info('Successfully inserted new schedule!')
+            self.logger.info('Successfully executed multiple insert queries!')
 
             return True
 
         except :
-            self.logger.error("Something bad happened, during inserting a new schedule!")
+            self.logger.error("Something bad happened, during executing multiple insert queries!")
 
             try:
                 con.rollback()
-                self.logger.debug("The transaction of the new schedule insertion was successfully rollbacked!")
+                self.logger.debug("The transaction of the multiple insert queries was successfully rollbacked!")
 
             except:
-                self.logger.error("Error rolling back the transaction of the schedule insertion!")
+                self.logger.error("Error rolling back the transaction of the multiple insert queries!")
                 pass
 
             con.close()
