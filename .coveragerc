@@ -1,3 +1,0 @@
-[run]
-source = mel_srl
-omit = mel_srl/test*
