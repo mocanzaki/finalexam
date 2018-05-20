@@ -60,8 +60,13 @@ def login_POST(request):
         # Try to log in with the credentials
         permission = user_management.login(username, password)
 
+        # Check if user is blocked
+        if permission == -1:
+           return render_to_response('../templates/login.jinja2',
+                                  {'user_blocked' : True},
+                                  request=request) 
         # Check for success
-        if permission is not None:
+        elif permission is not None:
             # Store data in session
             session['username'] = username
             session['permission'] = permission
@@ -152,7 +157,7 @@ def logout(request):
     return HTTPFound(location = request.route_url('home'))
 
 @view_config(route_name='schedule', renderer='../templates/schedule.jinja2', request_method='GET')
-def schedule(request):
+def schedule_GET(request):
   # Display deafult calendar, with current month
   if 'username' in request.session:
     now = datetime.datetime.now()
@@ -162,10 +167,26 @@ def schedule(request):
     return HTTPFound(location = request.route_url('home'))
 
 @view_config(route_name='account', renderer='../templates/account.jinja2', request_method='GET')
-def account(request):
-  if 'username' in request.session:
+def account_GET(request):
+  if request.session['permission'] == 1:
+    return render_to_response('../templates/account_manager.jinja2', {'data' : user_management.get_all_user_data()}, request=request)
+  elif 'username' in request.session:
     res = user_management.get_user_data(request.session['username'])
     return {'data': res}
+  else:
+    return HTTPFound(location = request.route_url('home'))
+
+@view_config(route_name='account', renderer='../templates/account.jinja2', request_method='POST')
+def account_POST(request):
+  if 'username' in request.session:
+    name = request.POST["name"]
+    email = request.POST["email"]
+    phone = request.POST["phone"]
+    
+    if user_management.update_user_data(request.session["username"], name, email, phone):
+        return {'data' : user_management.get_user_data(request.session['username'])}
+    else:
+        return {'data' : user_management.get_user_data(request.session['username']), 'fail' : True}
   else:
     return HTTPFound(location = request.route_url('home'))
     
@@ -243,3 +264,35 @@ def delete_num_plate(request):
             result = True
 
     return {'result' : str(result)}
+
+# Add a number plate for  a user
+# OUTPUT: succesfully added or not
+@view_config(route_name='add_num_plate', renderer='json', request_method='POST')
+def add_num_plate(request):
+    num_plate = str(request.POST['num_plate'])
+    username = request.session['username']
+
+    result = user_management.add_num_plate(num_plate,username)
+    if result == None:
+      return {'result' : "Number plate already in database!"}
+    return {'result' : str(result)}
+
+# Modify block on user
+# OUTPUT: succesfully modified or not
+@view_config(route_name='modify_block', renderer='json', request_method='POST')
+def modify_block(request):
+    userid = request.POST['user_id']
+    action = request.POST['action']
+
+    if request.session['permission'] == 1:
+        return {"result" : str(user_management.modify_block(userid, action))}
+
+# Search users
+# OUTPUT: a list of matched users
+@view_config(route_name='search_users', renderer='json', request_method='POST')
+def modify_block(request):
+    input_data = request.POST['input']
+
+    return {}
+
+

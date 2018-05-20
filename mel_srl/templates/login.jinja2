@@ -20,5 +20,10 @@
         Invalid user credentials! Please try again.
       </div>
     {% endif %}
+    {% if user_blocked is defined %}
+      <div class="alert alert-danger">
+        This user was blocked, please contact an admin for further information!
+      </div>
+    {% endif %}
 </div>
 {% endblock content %}

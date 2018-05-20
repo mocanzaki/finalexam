@@ -251,11 +251,6 @@ function get_schedule(obj){
 
                 if(k < hour.length && parseInt(hour[k]) == i){
                     while(k < hour.length && parseInt(hour[k]) == i){
-                        console.log(hour[k]);
-                        console.log(minute[k]);
-                        console.log(name[k]);
-                        console.log(num_plate[k]);
-                        console.log(service[k]);
                         inner_doc = inner_doc + "<tr><td>" + hour[k] + ":" + minute[k] + "</td><td>" + name[k] + "</td><td>" + num_plate[k] + "</td><td>" + service[k] + "</td></tr>";
 
                         k = k + 1;

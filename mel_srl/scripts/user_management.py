@@ -8,7 +8,7 @@ connection_pool = Connection()
 
 # Try to log in with the given credentials
 # INPUT - Username as string, Password as string
-# OUTPUT - None if authentication failed, otherwise the permission of the user
+# OUTPUT - None if authentication failed, -1 if user is blocked, otherwise the permission of the user
 def login(username, password):
     # Escape the single quotes from the sql query input
     username = escape_sql_input(username)
@@ -16,9 +16,12 @@ def login(username, password):
 
     # Get the credentials of the user
     try:
-        [salt, pw, permission] = get_user_credentials(username)[0]
+        [salt, pw, permission, blocked] = get_user_credentials(username)[0]
     except:
         return None
+
+    if blocked == 1:
+        return -1
         
     # Check if encrypted password is equal to the encrypted combination of the given password and the salt from the database
     if (pw == hashlib.sha512(password.encode() + salt.encode()).hexdigest()):
@@ -61,7 +64,7 @@ def insert_new_user(user_data, num_plate):
 # INPUT - username ESCAPED!
 # OUTPUT - a list of the user credentials
 def get_user_credentials(username):
-    query = "SELECT `salt`, `password`, `permission` FROM users WHERE `username` LIKE '{}'".format(username)
+    query = "SELECT `salt`, `password`, `permission`, `blocked` FROM users WHERE `username` LIKE '{}'".format(username)
     return connection_pool.select_query(query)
 
 # Check is username is available for register
@@ -97,3 +100,66 @@ def delete_num_plate(num_plate):
     num_plate = escape_sql_input(num_plate)
     query = ("DELETE FROM num_plates WHERE name LIKE '{}'").format(num_plate)
     return connection_pool.delete_query(query)
+
+# Adds number plate, checks if already exists
+# INPUT - Number plate, username
+# OUTPUT - None if number plate is already in database, True / False if query runs
+def add_num_plate(num_plate, username):
+    num_plate = escape_sql_input(num_plate)
+    username = escape_sql_input(username)
+    
+    query = ("INSERT INTO num_plates(`user_id`, `name`) VALUES((SELECT id FROM users WHERE username LIKE '{}'), '{}')").format(username, num_plate)
+
+    for i in get_num_plates_and_users():
+        if i[1] == num_plate:
+            return None
+
+    return connection_pool.insert_query(query)
+
+# Updates user data
+# INPUT - Username, Name, Email, Phone
+# OUTPUT - True / False
+def update_user_data(username, name, email, phone):
+    username = escape_sql_input(username)
+    name = escape_sql_input(name)
+    email = escape_sql_input(email)
+    phone = escape_sql_input(phone)
+
+    user_data = get_user_data(username)[0]
+
+    query = "UPDATE users "
+    execute = False
+
+    if name != user_data[1]:
+        query += "SET name = '" + name + "' "
+        execute = True
+
+    if email != user_data[2]:
+        if execute:
+            query += ", SET email = '" + email + "' "
+        else:
+            query += "SET email = '" + email + "' "
+        execute = True
+
+    if phone != user_data[3]:
+        if execute:
+            query += ", SET phone = '" + phone + "' "
+        else:
+            query += "SET phone = '" + phone + " "
+        execute = True
+
+    if execute:
+        query += "WHERE username LIKE '" + username + "'"
+        return connection_pool.update_query(query)
+    return True
+
+def get_all_user_data():
+    query = "SELECT id, username, name, email, phone, blocked FROM users"
+    return connection_pool.select_query(query)
+
+def modify_block(userid, action):
+    if action == "block":
+        query = "UPDATE users SET blocked = 1 WHERE id = " + userid
+    else:
+        query = "UPDATE users SET blocked = 0 WHERE id = " + userid
+    return connection_pool.update_query(query)
