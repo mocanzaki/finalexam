@@ -285,14 +285,13 @@ def modify_block(request):
     action = request.POST['action']
 
     if request.session['permission'] == 1:
-        return {"result" : str(user_management.modify_block(userid, action))}
+        return {'result' : str(user_management.modify_block(userid, action))}
 
 # Search users
 # OUTPUT: a list of matched users
 @view_config(route_name='search_users', renderer='json', request_method='POST')
-def modify_block(request):
+def search_users(request):
     input_data = request.POST['input']
-
-    return {}
+    return {'result' : user_management.search_users(input_data)}
 
 

@@ -123,7 +123,20 @@ function filter(){
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            
+            var result = JSON.parse(this.responseText).result;
+            var inner = "";
+            for(var i = 0; i < result.length; i++){
+                inner += "<tr><td>" + result[i][0] + "</td><td>" + result[i][1] + "</td><td>" + result[i][2] + "</td><td>" + result[i][3] + "</td><td>" + result[i][4] + "</td><td>";
+                if(result[i][5] == 0){
+                    inner += "<button id = 'btn" + result[i][0] + "' class = 'btn btn-info' onclick = 'block(" + result[i][0] + ")'>Block</button>";
+                }
+                else{
+                    inner += "<button id = 'btn" + result[i][0] + "' class = 'btn btn-info' onclick = 'unblock(" + result[i][0] + ")'>Unblock</button>";
+                }
+                inner += "</td></tr>";
+            }
+
+            document.getElementById("mainbody").innerHTML = inner;
         }
     };
     var params = "input=" + document.getElementById("search").value;

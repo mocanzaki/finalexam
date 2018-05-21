@@ -163,3 +163,11 @@ def modify_block(userid, action):
     else:
         query = "UPDATE users SET blocked = 0 WHERE id = " + userid
     return connection_pool.update_query(query)
+
+def search_users(input_data):
+    input_data = escape_sql_input(input_data)
+    
+    query = ("SELECT id, username, name, email, phone, blocked FROM users WHERE username LIKE '%{0}%'"
+             "OR name LIKE '%{0}%' OR email LIKE '%{0}%' OR phone LIKE '%{0}%'").format(input_data)
+
+    return connection_pool.select_query(query)
