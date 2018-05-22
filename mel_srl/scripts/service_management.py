@@ -1,8 +1,8 @@
 from .db_conn import Connection
-import logging
 
 # Create a pool for MySQL Connections
 connection_pool = Connection()
+
 # Get data from services
 # INPUT - None
 # OUTPUT - LIST([id,description])

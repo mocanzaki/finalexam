@@ -28,6 +28,8 @@ def includeme(config):
     ################# ADMIN ROUTES ###########################
     ##########################################################
 
+    config.add_route('manufacturer', '/manufacturers')
+
     ##########################################################
     ################# JSON ROUTES ############################
     ##########################################################
@@ -40,3 +42,6 @@ def includeme(config):
     config.add_route('add_num_plate', '/json/add_num_plate')
     config.add_route('modify_block', '/json/modify_block')
     config.add_route('search_users', '/json/search_users')
+    config.add_route('add_manufacturer', '/json/add_manufacturer')
+    config.add_route('delete_manufacturer', '/json/delete_manufacturer')
+    config.add_route('search_manufacturer', '/json/search_manufacturer')

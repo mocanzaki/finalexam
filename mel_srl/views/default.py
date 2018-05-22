@@ -3,11 +3,14 @@ from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 from pyramid.security import remember, forget
 from pyramid.httpexceptions import HTTPFound
+
 import re, logging, datetime
 from calendar import monthrange
+
 from ..scripts import user_management
 from ..scripts import schedule_management
 from ..scripts import service_management
+from ..scripts import stock_management
 
 # File used for describing the template rendering and the actions on every route
 # SYNTAX
@@ -189,6 +192,10 @@ def account_POST(request):
         return {'data' : user_management.get_user_data(request.session['username']), 'fail' : True}
   else:
     return HTTPFound(location = request.route_url('home'))
+
+@view_config(route_name='manufacturer', renderer='../templates/manufacturer_manager.jinja2', request_method='GET')
+def manufacturer_GET(request):
+  return {'data' : stock_management.get_all_manufacturers()}
     
 ######################## JSON OBJECT ROUTES ######################
 ## The methods below are used for async calls from the frontend ##
@@ -294,4 +301,27 @@ def search_users(request):
     input_data = request.POST['input']
     return {'result' : user_management.search_users(input_data)}
 
+# Add a manufacturer
+# OUTPUT: succesfully added or not
+@view_config(route_name='add_manufacturer', renderer='json', request_method='POST')
+def add_manufacturer(request):
+    manufacturer = str(request.POST['manufacturer'])
 
+    result = stock_management.add_manufacturer(manufacturer)
+    return {'result' : str(result)}
+
+# Delete a manufacturer
+# OUTPUT: succesfully deleted or not
+@view_config(route_name='delete_manufacturer', renderer='json', request_method='POST')
+def delete_manufacturer(request):
+    manufacturer = str(request.POST['manufacturer'])
+
+    result = stock_management.delete_manufacturer(manufacturer)
+    return {'result' : str(result)}
+
+# Search manufacturer
+# OUTPUT: a list of matched users
+@view_config(route_name='search_manufacturer', renderer='json', request_method='POST')
+def search_manufacturer(request):
+    input_data = request.POST['input']
+    return {'result' : stock_management.search_manufacturer(input_data)}
