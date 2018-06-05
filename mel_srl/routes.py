@@ -29,6 +29,8 @@ def includeme(config):
     ##########################################################
 
     config.add_route('manufacturer', '/manufacturers')
+    config.add_route('products', '/products')
+    config.add_route('service', '/services')
 
     ##########################################################
     ################# JSON ROUTES ############################
@@ -45,3 +47,9 @@ def includeme(config):
     config.add_route('add_manufacturer', '/json/add_manufacturer')
     config.add_route('delete_manufacturer', '/json/delete_manufacturer')
     config.add_route('search_manufacturer', '/json/search_manufacturer')
+    config.add_route('search_products', '/json/search_products')
+    config.add_route('add_products', '/json/add_products')
+    config.add_route('remove_products', '/json/remove_products')
+    config.add_route('add_service', '/json/add_service')
+    config.add_route('delete_service', '/json/delete_service')
+    config.add_route('search_service', '/json/search_service')

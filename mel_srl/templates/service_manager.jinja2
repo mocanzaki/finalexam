@@ -3,14 +3,14 @@
 {% block content %}
 <div class = "container">
     <br/>
-    <h2> Manage manufacturers </h2>
+    <h2> Manage services </h2>
     <br/>
     <div class="form-inline">
       <div class="form-group">
         <label for="search" class = "sr-only">Search:</label>
         <input type="text" class="form-control form-control-lg" id="search" placeholder="Search">
       </div>
-      <button style = "margin-left: 1%" type="submit" onclick = "filter_manufacturers()" class="btn btn-primary">Search</button>
+      <button style = "margin-left: 1%" type="submit" onclick = "filter_services()" class="btn btn-primary">Search</button>
     </div>
     <br/>
     <table class="table table-hover">
@@ -19,10 +19,10 @@
     </thead>
     <tbody id = "mainbody">
         {% for i in data %}
-        <tr id = "row_{{i[0]}}"><td id = "{{i[0]}}">{{i[1]}}</td><td><button class = "btn btn-danger" onclick = "delete_manufacturer({{i[0]}})">Delete</button></td></tr>
+        <tr id = "row_{{i[0]}}"><td id = "{{i[0]}}">{{i[1]}}</td><td><button class = "btn btn-danger" onclick = "delete_service({{i[0]}})">Delete</button></td></tr>
         {% endfor %}
-        <tr id = "new_manufacturer"><td><input type = "text" class = "form-control" id = "manufacturer" placeholder = "New manufacturer"></td>
-            <td><button class = "btn btn-success" onclick = "add_manufacturer()">Add</button></td></tr>
+        <tr id = "new_service"><td><input type = "text" class = "form-control" id = "service" placeholder = "New service"></td>
+            <td><button class = "btn btn-success" onclick = "add_service()">Add</button></td></tr>
     </tbody>
     </table>
 </div>

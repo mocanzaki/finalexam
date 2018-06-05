@@ -1,0 +1,27 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div class = "container">
+    <br/>
+    <h2> Manage products </h2>
+    <br/>
+    <div class="form-inline">
+      <div class="form-group">
+        <label for="search" class = "sr-only">Search:</label>
+        <input type="text" class="form-control form-control-lg" id="search" placeholder="Search">
+      </div>
+      <button style = "margin-left: 1%" type="submit" onclick = "filter_products()" class="btn btn-primary">Search</button>
+    </div>
+    <br/>
+    <table class="table table-hover">
+    <thead class = "thead-dark">
+        <tr><th>Manufacturer</th><th>Model</th><th>Size</th><th>Pieces</th><th>Price</th><th>Sales price</th></tr>
+    </thead>
+    <tbody id = "mainbody">
+        {% for i in data %}
+            <tr><td>{{i[0]}}</td><td>{{i[1]}}</td><td>{{i[2]}}/ {{i[3]}}/ R{{i[4]}}</td><td>{{i[5]}}</td><td>{{i[6]}}</td><td>{{i[7]}}</td></tr>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+{% endblock content %}

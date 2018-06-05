@@ -196,6 +196,14 @@ def account_POST(request):
 @view_config(route_name='manufacturer', renderer='../templates/manufacturer_manager.jinja2', request_method='GET')
 def manufacturer_GET(request):
   return {'data' : stock_management.get_all_manufacturers()}
+
+@view_config(route_name='products', renderer='../templates/product_manager.jinja2', request_method='GET')
+def products_GET(request):
+  return {'data' : stock_management.get_all_products()}
+
+@view_config(route_name='service', renderer='../templates/service_manager.jinja2', request_method='GET')
+def services_GET(request):
+  return {'data' : service_management.get_all_services()}
     
 ######################## JSON OBJECT ROUTES ######################
 ## The methods below are used for async calls from the frontend ##
@@ -220,7 +228,7 @@ def get_data_for_scheduling(request):
     day = int(request.POST['day'])
 
     hours = schedule_management.get_remaining_hours(year, month, day)
-    services = service_management.get_services()
+    services = service_management.get_all_services()
     num_plates = schedule_management.get_num_plates_available_for_scheduling(request.session['username'])
 
     return {'hours' : hours, 'services' : services, 'num_plates' : num_plates}
@@ -307,8 +315,8 @@ def search_users(request):
 def add_manufacturer(request):
     manufacturer = str(request.POST['manufacturer'])
 
-    result = stock_management.add_manufacturer(manufacturer)
-    return {'result' : str(result)}
+    result, mid = stock_management.add_manufacturer(manufacturer)
+    return {'result' : str(result), 'id' : mid}
 
 # Delete a manufacturer
 # OUTPUT: succesfully deleted or not
@@ -325,3 +333,28 @@ def delete_manufacturer(request):
 def search_manufacturer(request):
     input_data = request.POST['input']
     return {'result' : stock_management.search_manufacturer(input_data)}
+
+# Add a manufacturer
+# OUTPUT: succesfully added or not
+@view_config(route_name='add_service', renderer='json', request_method='POST')
+def add_service(request):
+    service = str(request.POST['service'])
+
+    result, sid = service_management.add_service(service)
+    return {'result' : str(result), 'id' : sid}
+
+# Delete a manufacturer
+# OUTPUT: succesfully deleted or not
+@view_config(route_name='delete_service', renderer='json', request_method='POST')
+def delete_service(request):
+    service = str(request.POST['service'])
+
+    result = service_management.delete_service(service)
+    return {'result' : str(result)}
+
+# Search manufacturer
+# OUTPUT: a list of matched users
+@view_config(route_name='search_service', renderer='json', request_method='POST')
+def search_service(request):
+    input_data = request.POST['input']
+    return {'result' : service_management.search_service(input_data)}
