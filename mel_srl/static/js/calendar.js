@@ -43,7 +43,7 @@ function prevmonth(){
                             days_list = days_list + "<li class = 'empty' onclick = 'set_time(this)'>" + i + "</li>";
                     }else{
                         if(filled_days.includes(i))
-                            days_list = days_list + "<li class = 'filled' id = 'disabled'>" + i + "</li>";
+                            days_list = days_list + "<li class = 'filled' onclick = 'get_schedule(this)'>" + i + "</li>";
                         else if(average_days.includes(i))
                             days_list = days_list + "<li class = 'average' onclick = 'get_schedule(this)'>" + i + "</li>";
                         else

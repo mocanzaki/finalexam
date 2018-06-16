@@ -42,14 +42,16 @@ class Connection:
     def select_query(self, query):
         con = self.get_connection()
         cursor = con.cursor()
+        try:
+            cursor.execute(query)
 
-        cursor.execute(query)
+            result = cursor.fetchall()
+            con.commit()
 
-        result = cursor.fetchall()
-        con.commit()
-
-        cursor.close()
-        con.close()
+            cursor.close()
+            con.close()
+        except:
+            return list()
 
         self.logger.debug(query)
         self.logger.debug(result)

@@ -1,5 +1,5 @@
 from .db_conn import Connection
-import logging
+from .escape_strings import escape_sql_input
 
 # Create a pool for MySQL Connections
 connection_pool = Connection()
@@ -49,6 +49,8 @@ def get_remaining_hours(year, month, day):
     return [hour for hour in free_hours if hour not in occupied_hours]
 
 def make_schedule(year, month, day, hour, minute, num_plate, service_id):
+    num_plate = escape_sql_input(num_plate)
+
      # build up datetime for mysql
     date = str(year) + "-" + str(month) + "-" + str(day) + " " + str(hour) + ":" + str(minute) + ":00"
     query = ("INSERT INTO schedule (`num_plate_id`, `date`, `service_id`) VALUES((SELECT id FROM num_plates WHERE name LIKE '{}'), '{}', '{}')").format(num_plate, date, service_id)
@@ -68,6 +70,8 @@ def make_schedule(year, month, day, hour, minute, num_plate, service_id):
 # INPUT - Username
 # OUPUT - List of number plates
 def get_num_plates_available_for_scheduling(username):
+    username = escape_sql_input(username)
+
     query = ("SELECT name FROM `num_plates` WHERE `user_id` = (SELECT id FROM `users` WHERE `username` LIKE '{}') "
             "AND name NOT IN (SELECT name FROM `num_plates` WHERE id IN (SELECT num_plate_id FROM schedule WHERE date > NOW()))").format(username)
     return connection_pool.select_query(query)
@@ -76,6 +80,7 @@ def get_num_plates_available_for_scheduling(username):
 # INPUT - Number plate
 # OUTPUT - True / False depending if it is or not scheduled
 def check_if_num_plate_is_scheduled(num_plate):
+    num_plate = escape_sql_input(num_plate)
     query = ("SELECT COUNT(*) FROM `schedule` WHERE num_plate_id = (SELECT id FROM num_plates WHERE name LIKE '{}') AND date > NOW()").format(num_plate)
     return connection_pool.select_query(query)[0][0] == 0
 

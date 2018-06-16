@@ -1,4 +1,5 @@
 from .db_conn import Connection
+from .escape_strings import escape_sql_input
 
 # Create a pool for MySQL Connections
 connection_pool = Connection()
@@ -11,6 +12,7 @@ def get_all_services():
     return connection_pool.select_query(query)
 
 def add_service(service):
+    service = escape_sql_input(service)
     query = ("SELECT COUNT(*) FROM services WHERE description LIKE '{}'").format(service)
     if connection_pool.select_query(query)[0][0] == 0:
         query = ("INSERT INTO services(`description`) VALUES ('{}')").format(service)
@@ -23,6 +25,7 @@ def add_service(service):
         return None, 0
 
 def delete_service(service):
+    service = escape_sql_input(service)
     query = ("DELETE FROM services WHERE id = {}").format(service)
     return connection_pool.delete_query(query)  
 
@@ -30,5 +33,6 @@ def delete_service(service):
 # INPUT - None
 # OUTPUT - LIST([id,description])
 def search_service(service):
+    service = escape_sql_input(service)
     query = ("SELECT id,description FROM services WHERE description LIKE '%{}%'").format(service)
     return connection_pool.select_query(query)

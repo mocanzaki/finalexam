@@ -40,16 +40,22 @@ def includeme(config):
     config.add_route('get_data_for_scheduling', '/json/get_data_for_scheduling')
     config.add_route('make_schedule', '/json/make_schedule')
     config.add_route('get_schedules_of_day', '/json/get_schedules_of_day')
+
     config.add_route('delete_num_plate', '/json/delete_num_plate')
     config.add_route('add_num_plate', '/json/add_num_plate')
+
     config.add_route('modify_block', '/json/modify_block')
     config.add_route('search_users', '/json/search_users')
+
     config.add_route('add_manufacturer', '/json/add_manufacturer')
     config.add_route('delete_manufacturer', '/json/delete_manufacturer')
     config.add_route('search_manufacturer', '/json/search_manufacturer')
-    config.add_route('search_products', '/json/search_products')
-    config.add_route('add_products', '/json/add_products')
-    config.add_route('remove_products', '/json/remove_products')
+
+    config.add_route('search_product', '/json/search_product')
+    config.add_route('add_product', '/json/add_product')
+    config.add_route('delete_product', '/json/delete_product')
+    config.add_route('update_product', '/json/update_product')
+
     config.add_route('add_service', '/json/add_service')
     config.add_route('delete_service', '/json/delete_service')
     config.add_route('search_service', '/json/search_service')

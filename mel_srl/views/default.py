@@ -199,7 +199,7 @@ def manufacturer_GET(request):
 
 @view_config(route_name='products', renderer='../templates/product_manager.jinja2', request_method='GET')
 def products_GET(request):
-  return {'data' : stock_management.get_all_products()}
+  return {'data' : stock_management.get_all_products(), 'manufacturers' : stock_management.get_all_manufacturers()}
 
 @view_config(route_name='service', renderer='../templates/service_manager.jinja2', request_method='GET')
 def services_GET(request):
@@ -303,14 +303,14 @@ def modify_block(request):
         return {'result' : str(user_management.modify_block(userid, action))}
 
 # Search users
-# OUTPUT: a list of matched users
+# OUTPUT: a list of matched manufacturers
 @view_config(route_name='search_users', renderer='json', request_method='POST')
 def search_users(request):
     input_data = request.POST['input']
     return {'result' : user_management.search_users(input_data)}
 
 # Add a manufacturer
-# OUTPUT: succesfully added or not
+# OUTPUT: succesfully added or not and the id of the added manufacturer
 @view_config(route_name='add_manufacturer', renderer='json', request_method='POST')
 def add_manufacturer(request):
     manufacturer = str(request.POST['manufacturer'])
@@ -328,14 +328,14 @@ def delete_manufacturer(request):
     return {'result' : str(result)}
 
 # Search manufacturer
-# OUTPUT: a list of matched users
+# OUTPUT: a list of matched manufacturers
 @view_config(route_name='search_manufacturer', renderer='json', request_method='POST')
 def search_manufacturer(request):
     input_data = request.POST['input']
     return {'result' : stock_management.search_manufacturer(input_data)}
 
-# Add a manufacturer
-# OUTPUT: succesfully added or not
+# Add a service
+# OUTPUT: succesfully added or not and the id of the added service
 @view_config(route_name='add_service', renderer='json', request_method='POST')
 def add_service(request):
     service = str(request.POST['service'])
@@ -352,9 +352,52 @@ def delete_service(request):
     result = service_management.delete_service(service)
     return {'result' : str(result)}
 
-# Search manufacturer
-# OUTPUT: a list of matched users
-@view_config(route_name='search_service', renderer='json', request_method='POST')
-def search_service(request):
+# Search product
+# OUTPUT: a list of matched products
+@view_config(route_name='search_product', renderer='json', request_method='POST')
+def search_product(request):
     input_data = request.POST['input']
-    return {'result' : service_management.search_service(input_data)}
+    search_type = request.POST['type']
+    if search_type == "by_name":
+        return {'result' : stock_management.search_product_by_name(input_data)}
+    elif search_type == "by_size":
+        return {'result' : stock_management.search_product_by_size(input_data)}
+    else:
+        return {'result' : stock_management.search_product_by_price(input_data)}
+
+# Add a product
+# OUTPUT: succesfully added or not
+@view_config(route_name='add_product', renderer='json', request_method='POST')
+def add_product(request):
+    manufacturer = request.POST['manufacturer']
+    model = request.POST['model']
+    size = request.POST['size']
+    piece = request.POST['piece']
+    price = request.POST['price']
+    sales_price = request.POST['sales_price']
+
+    result = stock_management.add_product(manufacturer, model, size, piece, price, sales_price)
+    return {'result' : str(result)}
+
+# Delete a product
+# OUTPUT: succesfully deleted or not
+@view_config(route_name='delete_product', renderer='json', request_method='POST')
+def delete_product(request):
+    p_id = str(request.POST['id'])
+
+    result = stock_management.delete_product(p_id)
+    return {'result' : str(result)}
+
+# Update a product
+# OUTPUT: succesfully updated or not
+@view_config(route_name='update_product', renderer='json', request_method='POST')
+def update_product(request):
+    p_id = str(request.POST['id'])
+    value = request.POST['value']
+
+    print("****************************************************")
+    print(value)
+    print("****************************************************")
+
+    result = stock_management.update_product(p_id, value)
+    return {'result' : str(result)}

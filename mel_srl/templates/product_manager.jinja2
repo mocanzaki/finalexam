@@ -8,18 +8,39 @@
     <div class="form-inline">
       <div class="form-group">
         <label for="search" class = "sr-only">Search:</label>
-        <input type="text" class="form-control form-control-lg" id="search" placeholder="Search">
+        <input type="text" class="form-control form-control-lg" id="search" placeholder="Search" title="Ex. by name: Debica passio. by size: 195/65/15. by price: 150-200">
       </div>
+        <label class="radio-inline" style="margin-left: 1%"><input type="radio" name="search_type" value="by_name" checked> by name</label>
+        <label class="radio-inline" style="margin-left: 1%"><input type="radio" name="search_type" value="by_size"> by size</label>
+        <label class="radio-inline" style="margin-left: 1%"><input type="radio" name="search_type" value="by-price"> by price</label>
       <button style = "margin-left: 1%" type="submit" onclick = "filter_products()" class="btn btn-primary">Search</button>
     </div>
     <br/>
     <table class="table table-hover">
     <thead class = "thead-dark">
-        <tr><th>Manufacturer</th><th>Model</th><th>Size</th><th>Pieces</th><th>Price</th><th>Sales price</th></tr>
+        <tr><th>Manufacturer</th><th>Model</th><th>Size</th><th>Pieces</th><th>Price</th><th>Sales price</th><th>Action</th></tr>
     </thead>
     <tbody id = "mainbody">
+        <div class="form-group">
+        <tr><td>
+            <div class="form-group">
+              <select class="form-control" id="new_manufacturer">
+                {% for i in manufacturers %}
+                <option value = "{{i[0]}}">{{i[1]}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <td><input type="text" class="form-control" id = "new_model"></td>
+            <td><input type="text" class="form-control"  id = "new_size"></td>
+            <td><input type="number" class="form-control"  id = "new_pieces" min = "0"></td>
+            <td><input type="number" class="form-control"  id = "new_price" min = "0"></td>
+            <td><input type="number" class="form-control"  id = "new_sales_price" min = "0"></td>
+            <td><button class = "btn btn-success" onclick = "add_product()">Add</button></td>
+        </tr></div>
         {% for i in data %}
-            <tr><td>{{i[0]}}</td><td>{{i[1]}}</td><td>{{i[2]}}/ {{i[3]}}/ R{{i[4]}}</td><td>{{i[5]}}</td><td>{{i[6]}}</td><td>{{i[7]}}</td></tr>
+            <tr id = "row_{{i[0]}}"><td>{{i[1]}}</td><td>{{i[2]}}</td><td>{{i[3]}}/ {{i[4]}}/ R{{i[5]}}</td>
+                <td><input type = "text" class = "form-control" value = "{{i[6]}}" id = "piece_{{i[0]}}" onchange = "update_product({{i[0]}})"></td>
+                <td>{{i[7]}}</td><td>{{i[8]}}</td><td><button class = "btn btn-danger" onclick = "delete_product({{i[0]}})">Delete</button></td></tr>
         {% endfor %}
     </tbody>
     </table>
