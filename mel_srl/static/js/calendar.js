@@ -209,18 +209,33 @@ function schedule(){
 
         xhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                if (JSON.parse(this.responseText).success == 'true')
-                    alert("OK!");
-                else{
-                    alert("NOT OK!");
+                if (JSON.parse(this.responseText).success == 'true'){
+                    document.getElementById("modal_header").innerHTML = "Request result"; 
+                    document.getElementById("modal_body").innerHTML = "Succesfully scheduled the car " + num_plate + " for this date: " + month + "/ " + day + " " + time + " !"; 
+                    document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
                 }
+                else{
+                    document.getElementById("modal_header").innerHTML = "Request result"; 
+                    document.getElementById("modal_body").innerHTML = "Something went wrong while trying to make new schedule!"; 
+                    document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
+                }
+                $(document).ready(function(){
+                    $("#myModal").modal();
+                });
+
             }
         };
 
         var params = "year=" + year + "&month=" + month + "&day=" + day + "&hour=" + hour + "&minute=" + minute + "&service_id=" + service_id + "&num_plate=" + num_plate;
         xhttp.send(params);
     }catch(err){
-        alert("Please select a number plate! In case the list is empty, you already have scheduled all your cars!");
+        document.getElementById("modal_header").innerHTML = "Request result"; 
+        document.getElementById("modal_body").innerHTML = "Please select a number plate from the list. If the list is empty you have one schedule for each of your cars!"; 
+        document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+        $(document).ready(function(){
+            $("#myModal").modal();
+        });
     }
 }
 
@@ -263,7 +278,6 @@ function get_schedule(obj){
             }         
 
             inner_doc = inner_doc + '</tbody></table>';
-            console.log(hour.indexOf(8))
             document.getElementById("day_content").innerHTML = inner_doc;
         }
     };

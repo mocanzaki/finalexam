@@ -32,12 +32,15 @@ function delete_num_plate(obj){
                     document.getElementById("num_plate" + obj).parentElement.remove();
                     alert("Succesfully deleted number plate");
                 }
-                else if(result == 'False'){
-                    alert("Something went wrong when deleting number plate");
-                }
                 else{
-                    alert("Number plate already in database! Please use only your own!");
+                    document.getElementById("modal_header").innerHTML = "Request result"; 
+                    document.getElementById("modal_body").innerHTML = "Something went wrong while sending the order!"; 
+                    document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
                 }
+                $(document).ready(function(){
+                    $("#myModal").modal();
+                });
             }
         };
         var params = "num_plate=" + num_plate;
@@ -58,18 +61,38 @@ function add_num_plate(obj){
                 if (result == 'True'){
                     document.getElementById("num_plate" + obj).disabled = true;
                     document.getElementById("add" + obj).parentElement.removeChild(document.getElementById("add" + obj));
-                    alert("Succesfully added number plate");
+                    document.getElementById("modal_header").innerHTML = "Request result"; 
+                    document.getElementById("modal_body").innerHTML = "Succesfully added new number plate!"; 
+                    document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
+                }
+                else if(result == 'False'){
+                    document.getElementById("modal_header").innerHTML = "Request result"; 
+                    document.getElementById("modal_body").innerHTML = "Something went wrong while adding the new number plate!"; 
+                    document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
                 }
                 else{
-                    alert("Something went wrong when adding number plate");
+                    document.getElementById("modal_header").innerHTML = "Request result"; 
+                    document.getElementById("modal_body").innerHTML = "Number plate already in database!"; 
+                    document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
                 }
+                $(document).ready(function(){
+                    $("#myModal").modal();
+                });
             }
         };
         var params = "num_plate=" + num_plate;
         xhttp.send(params);
     }
     else{
-        alert("Can not add empty number plate!");
+        document.getElementById("modal_header").innerHTML = "Request result"; 
+        document.getElementById("modal_body").innerHTML = "Can not add empty number plate!"; 
+        document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+        $(document).ready(function(){
+            $("#myModal").modal();
+        });
     }
 }
 
@@ -81,13 +104,22 @@ function block(obj){
         if (this.readyState == 4 && this.status == 200) {
             var result = JSON.parse(this.responseText).result;
             if (result == 'True'){
-                alert("Succesfully blocked user!");
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Succesfully blocked user!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
                 document.getElementById("btn"+obj).innerHTML = "Unblock";
                 document.getElementById("btn"+obj).setAttribute( "onClick", "unblock("+obj+");" );
             }
             else{
-                alert("Something went wrong when blocking user!");
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Something went wrong when blocking the user!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
             }
+            $(document).ready(function(){
+                $("#myModal").modal();
+            });
         }
     };
     var params = "action=block&user_id=" + obj;
@@ -105,14 +137,85 @@ function unblock(obj){
             if (result == 'True'){
                 document.getElementById("btn"+obj).innerHTML = "Block";
                 document.getElementById("btn"+obj).setAttribute( "onClick", "block("+obj+");" );
-                alert("Succesfully unblocked user!");
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Succesfully unblocked user!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
             }
             else{
-                alert("Something went wrong when unblocking user!");
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Something went wrong when unblocking the user!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
             }
+            $(document).ready(function(){
+                $("#myModal").modal();
+            });
         }
     };
     var params = "action=unblock&user_id=" + obj;
+    xhttp.send(params);
+    
+}
+
+function make_admin(obj){
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "/json/modify_permission", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = JSON.parse(this.responseText).result;
+            if (result == 'True'){
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Succesfully made user an admin!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
+                document.getElementById("btn_admin"+obj).innerHTML = "Make User";
+                document.getElementById("btn_admin"+obj).setAttribute( "onClick", "make_user("+obj+");" );
+            }
+            else{
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Something went wrong when making the user an admin!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
+            }
+            $(document).ready(function(){
+                $("#myModal").modal();
+            });
+        }
+    };
+    var params = "action=admin&user_id=" + obj;
+    xhttp.send(params);
+    
+}
+
+function make_user(obj){
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "/json/modify_permission", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = JSON.parse(this.responseText).result;
+            if (result == 'True'){
+                document.getElementById("btn_admin"+obj).innerHTML = "Make Admin";
+                document.getElementById("btn_admin"+obj).setAttribute( "onClick", "make_admin("+obj+");" );
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Succesfully made an admin user!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
+            }
+            else{
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Something went wrong when making the admin a user!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
+            }
+            $(document).ready(function(){
+                $("#myModal").modal();
+            });
+        }
+    };
+    var params = "action=user&user_id=" + obj;
     xhttp.send(params);
     
 }
@@ -125,19 +228,24 @@ function filter_users(){
         if (this.readyState == 4 && this.status == 200) {
             var result = JSON.parse(this.responseText).result;
             var inner = "";
-
             if(result.length == 0){
                 inner = "<tr><td></td><td>No users found matching your search!</td><td></td><td></td><td></td><td></td></tr>";
             }else{
                 for(var i = 0; i < result.length; i++){
-                    inner += "<tr><td>" + result[i][0] + "</td><td>" + result[i][1] + "</td><td>" + result[i][2] + "</td><td>" + result[i][3] + "</td><td>" + result[i][4] + "</td><td>";
+                    inner += "<tr><td>" + result[i][0] + "</td><td>" + result[i][1] + "</td><td>" + result[i][2] + "</td><td>" + result[i][3] + "</td><td>" + result[i][4] + "</td>";
                     if(result[i][5] == 0){
-                        inner += "<button id = 'btn" + result[i][0] + "' class = 'btn btn-info' onclick = 'block(" + result[i][0] + ")'>Block</button>";
+                        inner += "<td><button id = 'btn" + result[i][0] + "' class = 'btn btn-info' onclick = 'block(" + result[i][0] + ")'>Block</button></td>";
                     }
                     else{
-                        inner += "<button id = 'btn" + result[i][0] + "' class = 'btn btn-info' onclick = 'unblock(" + result[i][0] + ")'>Unblock</button>";
+                        inner += "<td><button id = 'btn" + result[i][0] + "' class = 'btn btn-info' onclick = 'unblock(" + result[i][0] + ")'>Unblock</button></td>";
                     }
-                    inner += "</td></tr>";
+                    if(result[i][6] == 0){
+                        inner += "<td><button id = 'btn_admin" + result[i][0] + "' class = 'btn btn-info' onclick = 'make_admin(" + result[i][0] + ")'>Make admin</button></td>";
+                    }
+                    else{
+                        inner += "<td><button id = 'btn_admin" + result[i][0] + "' class = 'btn btn-info' onclick = 'make_user(" + result[i][0] + ")'>Make user</button></td>";
+                    }
+                    inner += "</tr>";
                 }
             }
 

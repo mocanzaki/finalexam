@@ -1,0 +1,25 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div class = "container">
+    <br/>
+    <h2> Orders </h2>
+    <br/>
+    <table class="table table-hover">
+    <thead class = "thead-dark">
+        <tr><th>User</th><th>Order date</th><th>Total sum</th></tr>
+    </thead>
+    <tbody id = "mainbody">
+        {% for i in data %}
+            <tr onclick = "show_order_details('{{i[0]}}','{{i[1]}}')"><td>{{i[0]}}</td><td>{{i[1]}}</td><td>{{i[2]}}</td></tr>
+        {% endfor %}
+    </tbody>
+    </table>
+
+    {% if data|length == 0 %}
+    <h3><center> There are no new orders! </center></h3>
+    {% endif %}
+
+</div>
+
+{% endblock content %}

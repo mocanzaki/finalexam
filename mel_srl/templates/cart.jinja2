@@ -1,0 +1,29 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div class = "container">
+    <br/>
+    <h2> My shopping cart </h2>
+    <br/>
+    <table class="table table-hover">
+    <thead class = "thead-dark">
+        <tr><th>Manufacturer</th><th>Model</th><th>Size</th><th>Pieces</th><th>Price</th><th>Action</th></tr>
+    </thead>
+    <tbody id = "mainbody">
+        {% for i in data %}
+            <tr id = "row_{{i[0]}}"><td>{{i[1]}}</td><td>{{i[2]}}</td><td>{{i[3]}}/ {{i[4]}}/ R{{i[5]}}</td><td>{{i[6]}}</td>
+                <td>{{i[8]}}</td>
+                <td><button class = "btn btn-danger" onclick = "delete_product_from_cart({{i[0]}})">Delete</button></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+
+    {% if data|length > 0 %}
+    <button class = "btn btn-info" onclick = "place_order()">Send order</button>
+    {% else %}
+    <h3><center> Your shopping cart is empty! :( </center></h3>
+    {% endif %}
+</div>
+
+{% endblock content %}

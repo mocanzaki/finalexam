@@ -36,27 +36,28 @@ def login(username, password):
 # Insert new user into the database
 # INPUT - Raw user data as seen in parameters
 # OUTPUT - True / False depending on the result of the insertion
-def register(username, name, email, phone, num_plate, password): 
+def register(username, name, email, phone, num_plate, password, address): 
     # Escape the single quotes from the sql query input
     username = escape_sql_input(username)
     password = escape_sql_input(password)
     name = escape_sql_input(name)
     email = escape_sql_input(email)
     num_plate = escape_sql_input(num_plate)
+    address = escape_sql_input(address)
 
     # Build salt and password
     salt = uuid.uuid4().hex
     password = hashlib.sha512(password.encode() + salt.encode()).hexdigest()
 
     # Return insertion result
-    return insert_new_user([username, name, email, phone, salt, password, 0], num_plate)
+    return insert_new_user([username, name, email, phone, salt, password, 0], num_plate, address)
 
 # Executes a user insertion in the table
 # INPUT - list of user data  IN ORDER AND ESCAPED!
 # OUTPUT - boolean, depending on the result of the insertion
-def insert_new_user(user_data, num_plate):
-    query = ("INSERT INTO  users (`username`, `name`, `email`, `phone`, `salt`, `password`, `permission`) "
-                 "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', {}); INSERT INTO num_plates (`user_id`, `name`) VALUES ( (SELECT id FROM users WHERE username LIKE '{}'), '{}')").format(*user_data, user_data[0], num_plate)
+def insert_new_user(user_data, num_plate, address):
+    query = ("INSERT INTO  users (`username`, `name`, `email`, `phone`, `salt`, `password`, `permission`, `address`) "
+                 "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', {}, '{}'); INSERT INTO num_plates (`user_id`, `name`) VALUES ( (SELECT id FROM users WHERE username LIKE '{}'), '{}')").format(*user_data, address, user_data[0], num_plate)
     
     return connection_pool.multiple_insert_query(query)
 
@@ -81,7 +82,7 @@ def check_if_username_is_useable(username):
 # OUTPUT - All user data in a list
 def get_user_data(username):
     username = escape_sql_input(username)
-    query = ("SELECT username, users.name, email, phone, num_plates.name FROM `users` LEFT JOIN `num_plates` ON  user_id = users.id WHERE username LIKE '{}'").format(username)
+    query = ("SELECT username, users.name, email, phone, address, num_plates.name FROM `users` LEFT JOIN `num_plates` ON  user_id = users.id WHERE username LIKE '{}'").format(username)
 
     return connection_pool.select_query(query)
 
@@ -119,11 +120,12 @@ def add_num_plate(num_plate, username):
 # Updates user data
 # INPUT - Username, Name, Email, Phone
 # OUTPUT - True / False
-def update_user_data(username, name, email, phone):
+def update_user_data(username, name, email, phone, address):
     username = escape_sql_input(username)
     name = escape_sql_input(name)
     email = escape_sql_input(email)
     phone = escape_sql_input(phone)
+    address = escape_sql_input(address) 
 
     user_data = get_user_data(username)[0]
 
@@ -148,13 +150,20 @@ def update_user_data(username, name, email, phone):
             query += "SET phone = '" + phone + " "
         execute = True
 
+    if address != user_data[4]:
+        if execute:
+            query += ", SET address = '" + address + "' "
+        else:
+            query += "SET address = '" + address + "' "
+        execute = True
+        
     if execute:
         query += "WHERE username LIKE '" + username + "'"
         return connection_pool.update_query(query)
     return True
 
 def get_all_user_data():
-    query = "SELECT id, username, name, email, phone, blocked FROM users"
+    query = "SELECT id, username, name, email, phone, blocked, permission FROM users"
     return connection_pool.select_query(query)
 
 def modify_block(userid, action):
@@ -164,10 +173,17 @@ def modify_block(userid, action):
         query = "UPDATE users SET blocked = 0 WHERE id = " + userid
     return connection_pool.update_query(query)
 
+def modify_permission(userid, action):
+    if action == "admin":
+        query = "UPDATE users SET permission = 1 WHERE id = " + userid
+    else:
+        query = "UPDATE users SET permission = 0 WHERE id = " + userid
+    return connection_pool.update_query(query)
+
 def search_users(input_data):
     input_data = escape_sql_input(input_data)
     
-    query = ("SELECT id, username, name, email, phone, blocked FROM users WHERE username LIKE '%{0}%'"
+    query = ("SELECT id, username, name, email, phone, blocked, permission FROM users WHERE username LIKE '%{0}%'"
              "OR name LIKE '%{0}%' OR email LIKE '%{0}%' OR phone LIKE '%{0}%'").format(input_data)
 
     return connection_pool.select_query(query)

@@ -22,6 +22,7 @@ def includeme(config):
     config.add_route('logout', '/logout')
     config.add_route('schedule', '/schedule')
     config.add_route('account', '/account')
+    config.add_route('cart', '/cart')
 
 
     ##########################################################
@@ -31,6 +32,7 @@ def includeme(config):
     config.add_route('manufacturer', '/manufacturers')
     config.add_route('products', '/products')
     config.add_route('service', '/services')
+    config.add_route('orders', '/orders')
 
     ##########################################################
     ################# JSON ROUTES ############################
@@ -45,6 +47,7 @@ def includeme(config):
     config.add_route('add_num_plate', '/json/add_num_plate')
 
     config.add_route('modify_block', '/json/modify_block')
+    config.add_route('modify_permission', '/json/modify_permission')
     config.add_route('search_users', '/json/search_users')
 
     config.add_route('add_manufacturer', '/json/add_manufacturer')
@@ -59,3 +62,10 @@ def includeme(config):
     config.add_route('add_service', '/json/add_service')
     config.add_route('delete_service', '/json/delete_service')
     config.add_route('search_service', '/json/search_service')
+
+    config.add_route('add_to_cart', '/json/add_to_cart')
+    config.add_route('delete_product_from_cart', '/json/delete_product_from_cart')
+    config.add_route('place_order', '/json/place_order')
+
+    config.add_route('get_order_details', '/json/get_order_details')
+    config.add_route('send_order', '/json/send_order')

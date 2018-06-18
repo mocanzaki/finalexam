@@ -18,9 +18,11 @@
     <br/>
     <table class="table table-hover">
     <thead class = "thead-dark">
-        <tr><th>Manufacturer</th><th>Model</th><th>Size</th><th>Pieces</th><th>Price</th><th>Sales price</th><th>Action</th></tr>
+        <tr><th>Manufacturer</th><th>Model</th><th>Size</th><th>Pieces</th><th>Price</th><th>Sales price</th>
+            {% if request.session['username'] is defined  %}<th>Action</th> {% endif %}</tr>
     </thead>
     <tbody id = "mainbody">
+        {% if request.session['permission'] is defined and request.session['permission'] == 1 %}
         <div class="form-group">
         <tr><td>
             <div class="form-group">
@@ -37,10 +39,22 @@
             <td><input type="number" class="form-control"  id = "new_sales_price" min = "0"></td>
             <td><button class = "btn btn-success" onclick = "add_product()">Add</button></td>
         </tr></div>
+        {% endif %}
         {% for i in data %}
             <tr id = "row_{{i[0]}}"><td>{{i[1]}}</td><td>{{i[2]}}</td><td>{{i[3]}}/ {{i[4]}}/ R{{i[5]}}</td>
+                {% if request.session['permission'] is defined and request.session['permission'] == 1 %}
                 <td><input type = "text" class = "form-control" value = "{{i[6]}}" id = "piece_{{i[0]}}" onchange = "update_product({{i[0]}})"></td>
-                <td>{{i[7]}}</td><td>{{i[8]}}</td><td><button class = "btn btn-danger" onclick = "delete_product({{i[0]}})">Delete</button></td></tr>
+                {% else %}
+                <td>{{i[6]}}</td>
+                {% endif %}
+                <td>{{i[7]}}</td><td>{{i[8]}}</td>
+                {% if request.session['permission'] is defined and request.session['permission'] == 1 %}
+                <td><button class = "btn btn-danger" onclick = "delete_product({{i[0]}})">Delete</button></td>
+                {% endif %}
+                {% if request.session['permission'] is defined and request.session['permission'] == 0 %}
+                <td><div class = "form-inline"><input type="text" class="form-control" style = "width: 15%; margin-right: 2%"  id = "pieces_{{i[0]}}" min = "0" value="1"><button class = "btn btn-success" onclick = "add_to_cart({{i[0]}})">Add to cart</button></div></td>
+                {% endif %}
+            </tr>
         {% endfor %}
     </tbody>
     </table>

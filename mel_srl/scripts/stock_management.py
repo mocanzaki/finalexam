@@ -1,5 +1,6 @@
 from .db_conn import Connection
 from .escape_strings import escape_sql_input
+import datetime
 
 # Create a pool for MySQL Connections
 connection_pool = Connection()
@@ -126,3 +127,72 @@ def update_product(p_id, value):
 
     return connection_pool.update_query(query)
 
+def add_to_cart(tyre_id, pieces, user):
+    try:
+        tyre_id = int(tyre_id)
+        pieces = int(pieces)
+    except:
+        return False, 0
+
+    query = ("SELECT pieces FROM tyres WHERE id = {}").format(tyre_id)
+    available_pieces = connection_pool.select_query(query)[0][0]
+
+    query = ("SELECT COUNT(*) FROM cart WHERE tyre_id = {} AND userid = (SELECT id FROM users WHERE username LIKE '{}') AND order_date IS NULL").format(tyre_id, user)
+    product_already_in_cart = connection_pool.select_query(query)[0][0]
+
+    if(available_pieces < pieces):
+        return None, available_pieces
+    else:
+        if product_already_in_cart == 0:
+            query = ("INSERT INTO cart(tyre_id, userid, pieces) VALUES ({}, (SELECT id FROM users WHERE username LIKE '{}'), {})").format(tyre_id, user, pieces)
+            if connection_pool.insert_query(query):
+                query = ("UPDATE tyres SET pieces = pieces - {} WHERE id = {}").format(pieces, tyre_id)
+                return connection_pool.update_query(query), 0
+            else:
+                return False, 0
+        else:
+            query = ("UPDATE cart SET pieces = pieces + {} WHERE tyre_id = {} AND userid = (SELECT id FROM users WHERE username LIKE '{}') AND order_date IS NULL").format(pieces, tyre_id, user)
+            if connection_pool.update_query(query):
+                query = ("UPDATE tyres SET pieces = pieces - {} WHERE id = {}").format(pieces, tyre_id)
+                return connection_pool.update_query(query), 0
+            else:
+                return False, 0
+
+def get_cart_data(user):
+    query = ("SELECT tyres.id, manufacturers.name, tyres.model, tyres.width, tyres.height, tyres.diameter, cart.pieces, tyres.price, tyres.sales_price FROM cart, tyres, manufacturers "
+             " WHERE userid = (SELECT id FROM users WHERE username LIKE '{}') AND manufacturers.id = tyres.manufacturer AND cart.tyre_id = tyres.id AND order_date IS NULL").format(user)
+    return connection_pool.select_query(query)
+
+def delete_product_from_cart(p_id, user):
+    try:
+        p_id = int(p_id)
+    except:
+        return False
+    query = ("SELECT pieces FROM cart WHERE tyre_id = {} AND userid = (SELECT id FROM users WHERE username LIKE '{}') AND order_date IS NULL").format(p_id, user)
+    pieces = connection_pool.select_query(query)[0][0]
+    query = ("DELETE FROM cart WHERE tyre_id = {} AND userid = (SELECT id FROM users WHERE username LIKE '{}') AND order_date IS NULL").format(p_id, user)
+    if connection_pool.delete_query(query):
+        query = ("UPDATE tyres SET pieces = pieces + {} WHERE id = {}").format(pieces, p_id)
+        return connection_pool.update_query(query)
+    else:
+        return False
+
+def place_order(user):
+    date = datetime.datetime.now().strftime("%Y-%m-%d")
+    query = ("UPDATE cart SET order_date = '{}' WHERE userid = (SELECT id FROM users WHERE username LIKE '{}') AND order_date IS NULL").format(date, user)
+    return connection_pool.update_query(query)
+
+def get_orders():
+    query = ("SELECT username, order_date, SUM(cart.pieces * sales_price) FROM users, cart, tyres WHERE users.id = userid AND tyre_id = tyres.id AND order_date IS NOT NULL AND finalized = 0 GROUP BY username, order_date ORDER BY order_date ASC")
+    return connection_pool.select_query(query)
+
+def get_order_details(username, date):
+    username = escape_sql_input(username)
+    date  = escape_sql_input(date)
+    query = ("SELECT manufacturers.name, tyres.model, tyres.width, tyres.height, tyres.diameter, cart.pieces, tyres.sales_price FROM cart, manufacturers, tyres"
+             " WHERE userid = (SELECT id FROM users WHERE username LIKE '{}') AND manufacturers.id = tyres.manufacturer AND cart.tyre_id = tyres.id AND order_date = '{}'").format(username, date)
+    return connection_pool.select_query(query)
+
+def send_order(username, order_date):
+    query = ("UPDATE cart SET finalized = 1 WHERE userid = (SELECT id FROM users WHERE username LIKE '{}') AND order_date = '{}'").format(username, order_date)
+    return connection_pool.update_query(query)

@@ -99,6 +99,7 @@ def register_POST(request):
     phone = request.POST['phone']
     num_plate = request.POST['num_plate']
     password = request.POST['password']
+    address = request.POST['addr']
 
     # Check if user is already logged in
     session = request.session
@@ -139,7 +140,7 @@ def register_POST(request):
                                   request=request)
 
         # Try to submit data to the database
-        if user_management.register(username, name, email, phone, num_plate, password):
+        if user_management.register(username, name, email, phone, num_plate, password, address):
             return render_to_response('../templates/register.jinja2',
                                   {'successfully_registered' : True},
                                   request=request)
@@ -162,6 +163,11 @@ def logout(request):
 @view_config(route_name='schedule', renderer='../templates/schedule.jinja2', request_method='GET')
 def schedule_GET(request):
   # Display deafult calendar, with current month
+
+  if 'permission' not in request.session:
+    return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
+
   if 'username' in request.session:
     now = datetime.datetime.now()
     days = schedule_management.get_fillness_of_month(now.year, now.month)
@@ -171,6 +177,11 @@ def schedule_GET(request):
 
 @view_config(route_name='account', renderer='../templates/account.jinja2', request_method='GET')
 def account_GET(request):
+
+  if 'permission' not in request.session:
+    return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
+
   if request.session['permission'] == 1:
     return render_to_response('../templates/account_manager.jinja2', {'data' : user_management.get_all_user_data()}, request=request)
   elif 'username' in request.session:
@@ -181,12 +192,17 @@ def account_GET(request):
 
 @view_config(route_name='account', renderer='../templates/account.jinja2', request_method='POST')
 def account_POST(request):
+
+  if 'permission' not in request.session:
+    return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
   if 'username' in request.session:
     name = request.POST["name"]
     email = request.POST["email"]
     phone = request.POST["phone"]
+    address = request.POST["addr"]
     
-    if user_management.update_user_data(request.session["username"], name, email, phone):
+    if user_management.update_user_data(request.session["username"], name, email, phone, address):
         return {'data' : user_management.get_user_data(request.session['username'])}
     else:
         return {'data' : user_management.get_user_data(request.session['username']), 'fail' : True}
@@ -195,15 +211,60 @@ def account_POST(request):
 
 @view_config(route_name='manufacturer', renderer='../templates/manufacturer_manager.jinja2', request_method='GET')
 def manufacturer_GET(request):
+
+  if 'permission' in request.session:
+    if request.session['permission'] != 1:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
+  else:
+    return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
+
   return {'data' : stock_management.get_all_manufacturers()}
 
 @view_config(route_name='products', renderer='../templates/product_manager.jinja2', request_method='GET')
 def products_GET(request):
+
   return {'data' : stock_management.get_all_products(), 'manufacturers' : stock_management.get_all_manufacturers()}
 
 @view_config(route_name='service', renderer='../templates/service_manager.jinja2', request_method='GET')
 def services_GET(request):
+
+  if 'permission' in request.session:
+    if request.session['permission'] != 1:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
+  else:
+    return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
+
   return {'data' : service_management.get_all_services()}
+
+@view_config(route_name='cart', renderer='../templates/cart.jinja2', request_method='GET')
+def cart_GET(request):
+
+  if 'permission' in request.session:
+    if request.session['permission'] != 0:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
+  else:
+    return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
+
+  return {'data' : stock_management.get_cart_data(request.session['username'])}
+
+@view_config(route_name='orders', renderer='../templates/orders.jinja2', request_method='GET')
+def orders_GET(request):
+
+  if 'permission' in request.session:
+    if request.session['permission'] != 1:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
+  else:
+    return render_to_response('../templates/403.jinja2', {'error' : True},
+                                request=request)
+
+  return {'data' : stock_management.get_orders()}
     
 ######################## JSON OBJECT ROUTES ######################
 ## The methods below are used for async calls from the frontend ##
@@ -214,6 +275,12 @@ def services_GET(request):
 # OUTPUT: {month: [month number, month name], days: [days to be skipped, days in the month]}
 @view_config(route_name='get_dates', renderer='json', request_method='POST')
 def get_dates(request):
+
+    if 'permission' not in request.session:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    
+
     year = int(request.POST['year'])
     month = int(request.POST['month'])
     days = schedule_management.get_fillness_of_month(year, month)
@@ -223,6 +290,12 @@ def get_dates(request):
 # OUTPUT: {month: [month number, month name], days: [days to be skipped, days in the month]}
 @view_config(route_name='get_data_for_scheduling', renderer='json', request_method='POST')
 def get_data_for_scheduling(request):
+
+    if 'permission' not in request.session:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    
+
     year = int(request.POST['year'])
     month = int(request.POST['month'])
     day = int(request.POST['day'])
@@ -237,6 +310,15 @@ def get_data_for_scheduling(request):
 # OUTPUT: {success : true / false}
 @view_config(route_name='make_schedule', renderer='json', request_method='POST')
 def make_schedule(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 0:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     year = int(request.POST['year'])
     month = int(request.POST['month'])
     day = int(request.POST['day'])
@@ -255,6 +337,15 @@ def make_schedule(request):
 # OUTPUT: {month: [month number, month name], days: [days to be skipped, days in the month]}
 @view_config(route_name='get_schedules_of_day', renderer='json', request_method='POST')
 def get_schedules_of_day(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     year = int(request.POST['year'])
     month = int(request.POST['month'])
     day = int(request.POST['day'])
@@ -268,6 +359,15 @@ def get_schedules_of_day(request):
 # OUTPUT: succesfully deleted or not
 @view_config(route_name='delete_num_plate', renderer='json', request_method='POST')
 def delete_num_plate(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 0:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     num_plate = str(request.POST['num_plate'])
 
     res = user_management.get_num_plates_and_users()
@@ -284,6 +384,15 @@ def delete_num_plate(request):
 # OUTPUT: succesfully added or not
 @view_config(route_name='add_num_plate', renderer='json', request_method='POST')
 def add_num_plate(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 0:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     num_plate = str(request.POST['num_plate'])
     username = request.session['username']
 
@@ -296,16 +405,53 @@ def add_num_plate(request):
 # OUTPUT: succesfully modified or not
 @view_config(route_name='modify_block', renderer='json', request_method='POST')
 def modify_block(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     userid = request.POST['user_id']
     action = request.POST['action']
 
     if request.session['permission'] == 1:
         return {'result' : str(user_management.modify_block(userid, action))}
 
+# Modify permission of user
+# OUTPUT: succesfully modified or not
+@view_config(route_name='modify_permission', renderer='json', request_method='POST')
+def modify_permission(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
+    userid = request.POST['user_id']
+    action = request.POST['action']
+
+    if request.session['permission'] == 1:
+        return {'result' : str(user_management.modify_permission(userid, action))}
+
 # Search users
 # OUTPUT: a list of matched manufacturers
 @view_config(route_name='search_users', renderer='json', request_method='POST')
 def search_users(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     input_data = request.POST['input']
     return {'result' : user_management.search_users(input_data)}
 
@@ -313,6 +459,15 @@ def search_users(request):
 # OUTPUT: succesfully added or not and the id of the added manufacturer
 @view_config(route_name='add_manufacturer', renderer='json', request_method='POST')
 def add_manufacturer(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     manufacturer = str(request.POST['manufacturer'])
 
     result, mid = stock_management.add_manufacturer(manufacturer)
@@ -322,6 +477,15 @@ def add_manufacturer(request):
 # OUTPUT: succesfully deleted or not
 @view_config(route_name='delete_manufacturer', renderer='json', request_method='POST')
 def delete_manufacturer(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     manufacturer = str(request.POST['manufacturer'])
 
     result = stock_management.delete_manufacturer(manufacturer)
@@ -331,6 +495,15 @@ def delete_manufacturer(request):
 # OUTPUT: a list of matched manufacturers
 @view_config(route_name='search_manufacturer', renderer='json', request_method='POST')
 def search_manufacturer(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     input_data = request.POST['input']
     return {'result' : stock_management.search_manufacturer(input_data)}
 
@@ -338,6 +511,15 @@ def search_manufacturer(request):
 # OUTPUT: succesfully added or not and the id of the added service
 @view_config(route_name='add_service', renderer='json', request_method='POST')
 def add_service(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     service = str(request.POST['service'])
 
     result, sid = service_management.add_service(service)
@@ -347,6 +529,15 @@ def add_service(request):
 # OUTPUT: succesfully deleted or not
 @view_config(route_name='delete_service', renderer='json', request_method='POST')
 def delete_service(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+  
     service = str(request.POST['service'])
 
     result = service_management.delete_service(service)
@@ -358,17 +549,35 @@ def delete_service(request):
 def search_product(request):
     input_data = request.POST['input']
     search_type = request.POST['type']
-    if search_type == "by_name":
-        return {'result' : stock_management.search_product_by_name(input_data)}
-    elif search_type == "by_size":
-        return {'result' : stock_management.search_product_by_size(input_data)}
+
+    if 'permission' in request.session:
+        if search_type == "by_name":
+            return {'result' : stock_management.search_product_by_name(input_data), 'permission' : request.session['permission']}
+        elif search_type == "by_size":
+            return {'result' : stock_management.search_product_by_size(input_data), 'permission' : request.session['permission']}
+        else:
+            return {'result' : stock_management.search_product_by_price(input_data), 'permission' : request.session['permission']}
     else:
-        return {'result' : stock_management.search_product_by_price(input_data)}
+        if search_type == "by_name":
+            return {'result' : stock_management.search_product_by_name(input_data), 'permission' : '-1'}
+        elif search_type == "by_size":
+            return {'result' : stock_management.search_product_by_size(input_data), 'permission' : '-1'}
+        else:
+            return {'result' : stock_management.search_product_by_price(input_data), 'permission' : '-1'}
 
 # Add a product
 # OUTPUT: succesfully added or not
 @view_config(route_name='add_product', renderer='json', request_method='POST')
 def add_product(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     manufacturer = request.POST['manufacturer']
     model = request.POST['model']
     size = request.POST['size']
@@ -383,6 +592,15 @@ def add_product(request):
 # OUTPUT: succesfully deleted or not
 @view_config(route_name='delete_product', renderer='json', request_method='POST')
 def delete_product(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
     p_id = str(request.POST['id'])
 
     result = stock_management.delete_product(p_id)
@@ -392,12 +610,105 @@ def delete_product(request):
 # OUTPUT: succesfully updated or not
 @view_config(route_name='update_product', renderer='json', request_method='POST')
 def update_product(request):
-    p_id = str(request.POST['id'])
-    value = request.POST['value']
 
-    print("****************************************************")
-    print(value)
-    print("****************************************************")
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
+    p_id = str(request.POST['id'])
+    value = str(request.POST['value'])
 
     result = stock_management.update_product(p_id, value)
+    return {'result' : str(result)}
+
+# Add products to cart
+# OUTPUT: succesfully updated or not
+@view_config(route_name='add_to_cart', renderer='json', request_method='POST')
+def add_to_cart(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 0:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
+    tyre_id = str(request.POST['tyre_id'])
+    pieces = str(request.POST['pieces'])
+
+    result, available = stock_management.add_to_cart(tyre_id, pieces, request.session['username'])
+    return {'result' : str(result), 'available' : str(available)}
+
+# Delete a product from cart
+# OUTPUT: succesfully deleted or not
+@view_config(route_name='delete_product_from_cart', renderer='json', request_method='POST')
+def delete_product_from_cart(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 0:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
+    p_id = str(request.POST['id'])
+
+    result = stock_management.delete_product_from_cart(p_id, request.session['username'])
+    return {'result' : str(result)}
+
+# Place order
+# OUTPUT: succesfully sent or not
+@view_config(route_name='place_order', renderer='json', request_method='POST')
+def place_order(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 0:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
+    result = stock_management.place_order(request.session['username'])
+    return {'result' : str(result)}
+
+# Get order details
+@view_config(route_name='get_order_details', renderer='json', request_method='POST')
+def get_order_details(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
+    username = request.POST['username']
+    date = request.POST['order_date']
+    result = stock_management.get_order_details(username, date)
+    return {'result' : result}
+
+# Send order
+# OUTPUT: succesfully sent or not
+@view_config(route_name='send_order', renderer='json', request_method='POST')
+def send_order(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 1:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
+    username = request.POST['username']
+    date = request.POST['order_date']
+    result = stock_management.send_order(username, date)
     return {'result' : str(result)}

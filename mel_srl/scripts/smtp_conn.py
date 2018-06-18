@@ -1,0 +1,1 @@
+# Here goes the smtp server connection and the implementation of sending the message
