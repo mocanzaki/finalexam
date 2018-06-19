@@ -465,7 +465,6 @@ function show_order_details(username, order_date){
 }
 
 function send_order(username, order_date){
-    console.log("itt");
     var xhttp = new XMLHttpRequest();
     xhttp.open("POST", "/json/send_order", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");

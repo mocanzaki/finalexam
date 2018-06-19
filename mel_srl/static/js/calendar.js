@@ -284,3 +284,31 @@ function get_schedule(obj){
     var params = "year=" + year + "&month=" + month + "&day=" + day;
     xhttp.send(params);
 }
+
+function delete_schedule(obj){
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "/json/delete_schedule", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = JSON.parse(this.responseText).result;
+            if(result == 'True'){
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Succesfully deleted the schedule!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" onclick = "location.reload()" class="btn btn-danger" data-dismiss="modal">Close</button>';
+               
+            }
+            else{
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Something went wrong while deleting the schedule!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" onclick = "location.reload()" class="btn btn-danger" data-dismiss="modal">Close</button>';
+               
+            }
+            $(document).ready(function(){
+                $("#myModal").modal();
+            });
+        }
+    };
+    var params = "id=" + obj;
+    xhttp.send(params);
+}

@@ -1,11 +1,35 @@
 {% extends "layout.jinja2" %}
 
 {% block content %}
+
+{% if request.session['permission'] is defined and request.session['permission'] == 0 %}
 <div class="content">
-  <h1><span class="font-semi-bold">Pyramid</span> <span class="smaller">Alchemy project</span></h1>
-  <p class="lead">Welcome to <span class="font-normal">mel_srl</span>, a&nbsp;Pyramid application generated&nbsp;by<br><span class="font-normal">Cookiecutter</span>.</p>
+    <div class="jumbotron">
+      <h1>Welcome back, {{request.session['username']}}!</h1> <br/>
+      {% if data|length == 0 %}
+      <p> You don't have any upcoming schedules </p>
+      {% else %}
+      <p> Your next schedule will be on {{data[0][1]}}, with the car {{data[0][2]}}. The service you requested is {{data[0][3]}}. </p>
+      {% endif %}
+    </div>
 </div>
-<div>
-    <p>{{request.session['username']}}</p>
+{% endif %}
+{% if request.session['permission'] is defined and request.session['permission'] == 1 %}
+<div class="content">
+    <div class="jumbotron">
+      <h1>Welcome back, {{request.session['username']}}!</h1> <br/>
+        <p> Please check for possible new orders! </p>
+    </div>
 </div>
+{% endif %}
+{% if request.session['permission'] is not defined %}
+<div class="content">
+    <div class="jumbotron">
+      <h1>Welcome guest!</h1> <br/>
+      <p>For accessing more functionalities on the website, such as scheduling, please log in.<br/>
+         If you don't have an account yet, you can create one by registering.<br/> 
+         Or you can just simply take a look at the products we can offer for you. </p>
+    </div>
+</div>
+{% endif %}
 {% endblock content %}

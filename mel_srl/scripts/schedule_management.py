@@ -92,7 +92,7 @@ def check_if_num_plate_is_scheduled(num_plate):
 def get_schedule_of_day(year, month, day):
     query = ("SELECT HOUR(date), MINUTE(date), users.name, num_plates.name, services.description FROM schedule, users, num_plates, services"
             " WHERE YEAR(date) = {} AND MONTH(date) = {} AND DAY(date) = {} AND num_plates.id = schedule.num_plate_id AND"
-            " services.id = schedule.service_id AND users.id = num_plates.user_id ORDER BY date ASC;").format(year,month,day)
+            " services.id = schedule.service_id AND users.id = num_plates.user_id ORDER BY date ASC").format(year,month,day)
 
     result = connection_pool.select_query(query)
 
@@ -111,4 +111,17 @@ def get_schedule_of_day(year, month, day):
 
     return hour, minute, name, number_plate, service
 
+def get_my_schedules(username):
+    username = escape_sql_input(username)
+    query = ("SELECT schedule.id, date, num_plates.name, services.description FROM schedule, users, num_plates, services"
+             " WHERE date > CURRENT_TIMESTAMP AND num_plates.id = schedule.num_plate_id AND"
+             " services.id = schedule.service_id AND num_plates.user_id = (SELECT id FROM users WHERE name LIKE '{}') GROUP BY schedule.id ORDER BY date ASC").format(username)
+    return connection_pool.select_query(query)
 
+def delete_schedule(s_id):
+    try:
+        s_id = int(s_id)
+    except:
+        return False
+    query = ("DELETE FROM schedule WHERE id = {}").format(s_id)
+    return connection_pool.delete_query(query)

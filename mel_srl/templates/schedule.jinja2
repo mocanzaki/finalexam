@@ -55,6 +55,18 @@
     <div class="table-responsive-md" id = "day_content">
   {% else %}
     <div class="form-group form-inline" id = "day_content">
+    {% if data|length != 0 %}
+    <table class="table table-hover">
+    <thead class = "thead-dark">
+        <tr><th>Date</th><th>Number plate</th><th>Service</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+        {% for i in data %}
+            <tr><td>{{i[1]}}</td><td>{{i[2]}}</td><td>{{i[3]}}</td><td><button class = "btn btn-danger" onclick = "delete_schedule({{i[0]}})">Delete schedule</button></td></tr>
+        {% endfor %}
+    </tbody>
+    </table>
+        {% endif %}
   {% endif %}
   </div>
 </div>

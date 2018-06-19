@@ -42,6 +42,7 @@ def includeme(config):
     config.add_route('get_data_for_scheduling', '/json/get_data_for_scheduling')
     config.add_route('make_schedule', '/json/make_schedule')
     config.add_route('get_schedules_of_day', '/json/get_schedules_of_day')
+    config.add_route('delete_schedule', '/json/delete_schedule')
 
     config.add_route('delete_num_plate', '/json/delete_num_plate')
     config.add_route('add_num_plate', '/json/add_num_plate')

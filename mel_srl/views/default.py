@@ -22,7 +22,9 @@ from ..scripts import stock_management
 
 @view_config(route_name='home', renderer='../templates/home.jinja2')
 def home(request):
-    return {}
+  if 'permission' in request.session and request.session['permission'] == 0:
+    return {'data' : schedule_management.get_my_schedules(request.session['username'])}
+  return {}
 
 @view_config(route_name='login', renderer='../templates/login.jinja2', request_method = 'GET')
 def login_GET(request):
@@ -171,7 +173,7 @@ def schedule_GET(request):
   if 'username' in request.session:
     now = datetime.datetime.now()
     days = schedule_management.get_fillness_of_month(now.year, now.month)
-    return {'year': now.year, 'month': (now.month, now.strftime("%B")), 'days': monthrange(now.year, now.month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
+    return {'data' : schedule_management.get_my_schedules(request.session['username']), 'year': now.year, 'month': (now.month, now.strftime("%B")), 'days': monthrange(now.year, now.month), 'empty_days': days[0], 'average_days' : days[1], 'filled_days' : days[2]}
   else:
     return HTTPFound(location = request.route_url('home'))
 
@@ -331,6 +333,21 @@ def make_schedule(request):
       return {'success' : 'true'}
     else:
       return {'success' : 'false'}
+
+@view_config(route_name='delete_schedule', renderer='json', request_method='POST')
+def delete_schedule(request):
+
+    if 'permission' in request.session:
+      if request.session['permission'] != 0:
+        return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+    else:
+      return render_to_response('../templates/403.jinja2', {'error' : True},
+                                  request=request)
+
+    s_id = int(request.POST['id'])
+
+    return { 'result' : str(schedule_management.delete_schedule(s_id))}
 
 
 # Returns the scheduled cars on a day
