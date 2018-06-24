@@ -79,6 +79,7 @@ function nextmonth(){
         if (this.readyState == 4 && this.status == 200) {
             document.getElementById("month_no").innerHTML = JSON.parse(this.responseText).month[0];
             document.getElementById("month_name").innerHTML = JSON.parse(this.responseText).month[1];
+            var permission = parseInt(JSON.parse(this.responseText).permission);
             document.getElementById("year").innerHTML = year;
             var days = JSON.parse(this.responseText).days;
             days[0] = parseInt(days[0]);

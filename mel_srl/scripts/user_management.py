@@ -1,5 +1,6 @@
 import hashlib, uuid
 from .db_conn import Connection
+from .smtp_conn import SMTP
 from .escape_strings import escape_sql_input
 import logging
 
@@ -187,3 +188,23 @@ def search_users(input_data):
              "OR name LIKE '%{0}%' OR email LIKE '%{0}%' OR phone LIKE '%{0}%'").format(input_data)
 
     return connection_pool.select_query(query)
+
+def reset_password(email):
+    email = escape_sql_input(email)
+    token = uuid.uuid4().hex
+
+    query = ("UPDATE users SET reset_pw = '{}' WHERE email LIKE '{}'").format(token, email)
+    if connection_pool.update_query(query):
+        smtp = SMTP()
+        smtp.start()
+        result = smtp.send_mail(email, "[MEL SRL] Password reset", "Dear user, \nPlease visit this link to reset your password: http://localhost:6543/reset_pw/" + token + "\n Thank you, \n Mel SRL group.")
+        smtp.close()
+        return result
+    else:
+        return False
+
+def change_password(pw, token):
+    salt = uuid.uuid4().hex
+    password = hashlib.sha512(pw.encode() + salt.encode()).hexdigest()
+    query = ("UPDATE users SET salt = '{}', password = '{}', reset_pw = NULL WHERE reset_pw = '{}'").format(salt, password, token)
+    return connection_pool.update_query(query)

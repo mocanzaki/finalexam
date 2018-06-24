@@ -13,6 +13,7 @@ def includeme(config):
     config.add_route('home', '/')
     config.add_route('login', '/login')
     config.add_route('register', '/register')
+    config.add_route('new_pw', '/reset_pw/{token}')
 
 
     ##########################################################
@@ -23,6 +24,7 @@ def includeme(config):
     config.add_route('schedule', '/schedule')
     config.add_route('account', '/account')
     config.add_route('cart', '/cart')
+    config.add_route('reset_pw', '/reset_pw')
 
 
     ##########################################################

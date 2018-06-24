@@ -40,7 +40,7 @@
               {% endif %}
             {% else %}
               {% if day in filled_days %}
-                <li class = "filled" id = "disabled">{{day}}</li>
+                <li class = "filled" onclick = 'get_schedule(this)'>{{day}}</li>
               {% elif day in average_days %}
                 <li class = "average" onclick = 'get_schedule(this)'>{{day}}</li>
               {% else %}

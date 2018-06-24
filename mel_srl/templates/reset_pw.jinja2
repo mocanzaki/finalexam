@@ -1,0 +1,26 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div class = "container">
+    <h2> Password reset </h2>
+    <form action="/reset_pw" method = "POST">
+     <div class="form-group">
+        <label for="email">Email:</label>
+        <input type = "email" class = "form-control" name = "email" minlength = "6" maxlength = "45" placeholder = "Email" required/>
+        </div>
+      <button class="btn btn-default">Reset password</button>
+    </form>
+    <br/>
+    {% if result is defined and result == "True" %}
+      <div class="alert alert-success">
+        Check your email, for password reset link please!
+      </div>
+    {% endif %}
+
+    {% if result is defined and result == "False" %}
+      <div class="alert alert-danger">
+        Something went wrong reseting your password, please try again later!
+      </div>
+    {% endif %}
+</div>
+{% endblock content %}

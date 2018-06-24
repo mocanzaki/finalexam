@@ -12,7 +12,6 @@
       <p> Your next schedule will be on {{data[0][1]}}, with the car {{data[0][2]}}. The service you requested is {{data[0][3]}}. </p>
       {% endif %}
     </div>
-</div>
 {% endif %}
 {% if request.session['permission'] is defined and request.session['permission'] == 1 %}
 <div class="content">
@@ -20,7 +19,6 @@
       <h1>Welcome back, {{request.session['username']}}!</h1> <br/>
         <p> Please check for possible new orders! </p>
     </div>
-</div>
 {% endif %}
 {% if request.session['permission'] is not defined %}
 <div class="content">
@@ -30,6 +28,9 @@
          If you don't have an account yet, you can create one by registering.<br/> 
          Or you can just simply take a look at the products we can offer for you. </p>
     </div>
-</div>
+
 {% endif %}
+
+</div>
+
 {% endblock content %}

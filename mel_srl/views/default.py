@@ -229,6 +229,29 @@ def products_GET(request):
 
   return {'data' : stock_management.get_all_products(), 'manufacturers' : stock_management.get_all_manufacturers()}
 
+@view_config(route_name='reset_pw', renderer='../templates/reset_pw.jinja2', request_method='GET')
+def reset_pw_GET(request):
+  print('kutya')
+  return {}
+
+@view_config(route_name='reset_pw', renderer='../templates/reset_pw.jinja2', request_method='POST')
+def reset_pw_POST(request):
+  email = request.POST['email']
+  return {'result' : str(user_management.reset_password(email))}
+
+@view_config(route_name='new_pw', renderer='../templates/new_pw.jinja2', request_method='GET')
+def new_pw_GET(request):
+  token = request.matchdict['token']
+  return {}
+
+@view_config(route_name='new_pw', renderer='../templates/new_pw.jinja2', request_method='POST')
+def new_pw_POST(request):
+  pw = request.POST['input']
+  token = request.matchdict['token']
+
+  return {'result' : user_management.change_password(pw, token)}
+
+
 @view_config(route_name='service', renderer='../templates/service_manager.jinja2', request_method='GET')
 def services_GET(request):
 

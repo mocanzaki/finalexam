@@ -1,0 +1,30 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div class = "container">
+    <h2> Reset password  </h2>
+    <form>
+     <div class="form-group">
+     <label for="password">Password:</label>
+     <input type = "password" class = "form-control" id = "password" name = "password" minlength = "6" maxlength = "20" pattern = "[a-zA-Z0-9-_.,?!@#$&*<>:;]{6,20}" placeholder = "Password" onchange = "check_password()" required/>
+     </div>
+     <div class="form-group" id = "ch_div">
+     <label for="ch_password">Retype password:</label>
+     <input type = "password" class = "form-control" id = "ch_password" name = "ch_password" minlength = "6" maxlength = "20" pattern = "[a-zA-Z0-9-_.,?!@#$&*<>:;]{6,20}" placeholder = "Retype password" onchange = "check_password()" required/>
+     </div>
+      <button class="btn btn-default" onclick = "reset_pw('{{request.matchdict['token']}}')">Reset password</button>
+    </form>
+    <br/>
+    {% if result is defined and result == "True" %}
+      <div class="alert alert-success">
+        Check your email, for password reset link please!
+      </div>
+    {% endif %}
+
+    {% if result is defined and result == "False" %}
+      <div class="alert alert-danger">
+        Something went wrong reseting your password, please try again later!
+      </div>
+    {% endif %}
+</div>
+{% endblock content %}

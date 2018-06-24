@@ -255,3 +255,31 @@ function filter_users(){
     var params = "input=" + document.getElementById("search").value;
     xhttp.send(params);
 }
+
+function reset_pw(token){
+    var xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "/reset_pw/" + token, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var result = JSON.parse(this.responseText).result;
+            if (result == 'True'){
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Succesfully reseted your password!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
+            }
+            else{
+                document.getElementById("modal_header").innerHTML = "Request result"; 
+                document.getElementById("modal_body").innerHTML = "Something went wrong when reseting your password!"; 
+                document.getElementById("modal_footer").innerHTML = '<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>';
+
+            }
+            $(document).ready(function(){
+                $("#myModal").modal();
+            });
+        }
+    };
+    var params = "input=" + document.getElementById("password").value;
+    xhttp.send(params);
+}
